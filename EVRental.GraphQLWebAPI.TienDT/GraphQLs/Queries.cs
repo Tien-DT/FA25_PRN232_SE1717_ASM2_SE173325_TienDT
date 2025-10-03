@@ -1,0 +1,30 @@
+﻿using EVRental.Repositories.TienDT.Models;
+using EVRental.Repositories.TienDT.ModelExtensions;
+using EVRental.Services.TienDT;
+
+namespace EVRental.GraphQLWebAPI.TienDT.GraphQLs
+{
+    public class Queries
+    {
+        private readonly IServiceProviders _serviceProviders;
+        public Queries(IServiceProviders serviceProviders) => _serviceProviders = serviceProviders ?? new ServiceProviders();
+
+        public async Task<List<RentalsTienDt>> GetRentalsTienDts()
+        {
+            return await _serviceProviders.IRentalsTienDtService.GetAllAsync();
+        }
+
+        public async Task<RentalsTienDt> GetRentalsTienDtByIdAsync(int id)
+        {
+            return await _serviceProviders.IRentalsTienDtService.GetByIdAsync(id);
+        }
+
+        public async Task<PaginationResult<List<RentalsTienDt>>> SearchWithPaging(RentalsTienDtSearchRequest searchRequest)
+        {
+            return await _serviceProviders.IRentalsTienDtService.SearchWithPaginationAsync(searchRequest);  
+        }
+
+
+    }
+
+}
