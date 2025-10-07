@@ -1,0 +1,57 @@
+﻿@page "/RentalsTienDts/RentalsTienDtsList"
+@using EVRental.BlazorWebApp.TienDT.Models
+@inject EVRental.BlazorWebApp.TienDT.GraphQLClients.GraphQLConsumers _graphQLConsumers
+<h3>RentalsTienDtList</h3>
+@if (RentalsTienDts == null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<a href="/RentalsTienDts/RentalsTienDtForm" class="btn btn-danger">Create</a>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>rentalTienDtid</th>
+				<th>userAccountId</th>
+				<th>vehicleId</th>
+				<th>totalAmount</th>
+				<th>securityDeposit</th>
+				<th>note</th>
+				<th>createdDate</th>
+				<th>isActive</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in RentalsTienDts)
+			{
+				<tr>
+					<td>@item.RentalTienDtid</td>
+					<td>@item.UserAccountId</td>
+					<td>@item.VehicleId</td>
+					<td>@(item.TotalAmount.HasValue ? item.TotalAmount.Value.ToString("C") : string.Empty)</td>
+					<td>@item.SecurityDeposit.ToString("C")</td>
+					<td>@(string.IsNullOrEmpty(item.Note) ? "" : item.Note)</td>
+					<td>@(item.CreatedDate.HasValue ? item.CreatedDate.Value.ToString("g") : string.Empty)</td>
+					<td>@(item.IsActive.HasValue ? (item.IsActive.Value ? "Yes" : "No") : "")</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code {
+	private List<RentalsTienDt>? RentalsTienDts;
+
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			RentalsTienDts = await _graphQLConsumers.GetRentalsAsync();
+		}
+		catch (Exception e)
+		{
+			throw new Exception();
+		}
+	}
+}	

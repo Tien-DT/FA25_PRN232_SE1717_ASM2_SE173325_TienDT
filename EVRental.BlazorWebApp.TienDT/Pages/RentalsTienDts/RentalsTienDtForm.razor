@@ -1,0 +1,95 @@
+﻿@page "/RentalsTienDts/RentalsTienDtForm"
+@using EVRental.BlazorWebApp.TienDT.Models
+@using System.Globalization
+
+<div class="rental-form-container">
+	<div class="card">
+		<div class="card-header">
+			<h3>Đăng ký thuê xe</h3>
+			<p class="subtitle">Nhập thông tin thuê xe — đơn giản, nhanh chóng và rõ ràng</p>
+		</div>
+
+		<EditForm Model="rental" OnValidSubmit="HandleValidSubmit">
+			<DataAnnotationsValidator />
+			<ValidationSummary />
+
+			<div class="card-body">
+				<div class="grid">
+					<div class="form-group">
+						<label for="userAccount">Người thuê (UserAccountId)</label>
+						<InputNumber id="userAccount" class="input" @bind-Value="rental.UserAccountId" />
+					</div>
+
+					<div class="form-group">
+						<label for="vehicle">Xe (VehicleId)</label>
+						<InputNumber id="vehicle" class="input" @bind-Value="rental.VehicleId" />
+					</div>
+
+					<div class="form-group">
+						<label for="station">Trạm (StationId)</label>
+						<InputNumber id="station" class="input" @bind-Value="rental.StationId" />
+					</div>
+
+					<div class="form-group">
+						<label for="start">Thời gian bắt đầu</label>
+						<InputDate id="start" class="input" @bind-Value="rental.StartTime" />
+					</div>
+
+					<div class="form-group">
+						<label for="plannedEnd">Thời gian dự kiến kết thúc</label>
+						<InputDate id="plannedEnd" class="input" @bind-Value="rental.PlannedEndTime" />
+					</div>
+
+					<div class="form-group">
+						<label for="security">Tiền đặt cọc</label>
+						<InputNumber id="security" class="input" @bind-Value="rental.SecurityDeposit" />
+					</div>
+
+					<div class="form-group full-width">
+						<label for="note">Ghi chú</label>
+						<InputTextArea id="note" class="textarea" @bind-Value="rental.Note" />
+					</div>
+				</div>
+			</div>
+
+			<div class="card-footer">
+				<button type="submit" class="btn primary">Lưu</button>
+				<button type="button" class="btn ghost" @onclick="ResetForm">Xóa</button>
+			</div>
+		</EditForm>
+	</div>
+	<div class="preview">
+		<h4>Xem trước</h4>
+		<div class="preview-card">
+			<div><strong>Bắt đầu:</strong> @rental.StartTime.ToString("g", CultureInfo.CurrentCulture)</div>
+			<div><strong>Dự kiến kết thúc:</strong> @(rental.PlannedEndTime?.ToString("g", CultureInfo.CurrentCulture) ?? "-")</div>
+			<div><strong>Đặt cọc:</strong> @string.Format(CultureInfo.CurrentCulture, "{0:C}", rental.SecurityDeposit)</div>
+			<div><strong>Ghi chú:</strong> @rental.Note</div>
+		</div>
+	</div>
+</div>
+
+@code {
+	private RentalsTienDt rental = new RentalsTienDt
+	{
+		StartTime = DateTime.Now,
+		SecurityDeposit = 0m,
+		IsActive = true
+	};
+
+	private void HandleValidSubmit()
+	{
+		// TODO: wire up submission to backend (GraphQL or API)
+		Console.WriteLine("Form valid - would submit to server here.");
+	}
+
+	private void ResetForm()
+	{
+		rental = new RentalsTienDt
+		{
+			StartTime = DateTime.Now,
+			SecurityDeposit = 0m,
+			IsActive = true
+		};
+	}
+}

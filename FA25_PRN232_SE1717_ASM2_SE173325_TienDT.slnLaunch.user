@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "EVRental.GraphQLWebAPI.TienDT\\EVRental.GraphQLWebAPI.TienDT.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "EVRental.BlazorWebApp.TienDT\\EVRental.BlazorWebApp.TienDT.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
