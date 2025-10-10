@@ -31,6 +31,14 @@
 
 				<div class="card-body">
 					<div class="grid">
+						@if (!Id.HasValue)
+						{
+							<div class="form-group">
+								<label for="rentalId">Mã thuê xe (RentalTienDtid)</label>
+								<InputNumber id="rentalId" class="input" @bind-Value="rental.RentalTienDtid" />
+							</div>
+						}
+
 						<div class="form-group">
 							<label for="userAccount">Người thuê (UserAccountId)</label>
 							<InputNumber id="userAccount" class="input" @bind-Value="rental.UserAccountId" />

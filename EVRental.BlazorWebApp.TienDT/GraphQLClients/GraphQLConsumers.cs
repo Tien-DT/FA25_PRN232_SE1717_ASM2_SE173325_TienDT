@@ -72,10 +72,40 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
         {
             var request = new GraphQLRequest
             {
-                Query = @"mutation UpdateRentalsTienDt($input: RentalsTienDtInput!) {
-                    updateRentalsTienDt(rentalsTienDt: $input)
+                Query = @"mutation UpdateRentalsTienDt($rentalTienDtid: Int!, $userAccountId: Int!, $vehicleId: Int!, $stationId: Int!, 
+                        $startTime: DateTime!, $endTime: DateTime, $plannedEndTime: DateTime, $totalAmount: Decimal, 
+                        $securityDeposit: Decimal!, $note: String, $rentalStatusTienDtid: Int, $isCompleted: Boolean, $isActive: Boolean) {
+                    updateRentalsTienDt(rentalsTienDt: {
+                        rentalTienDtid: $rentalTienDtid
+                        userAccountId: $userAccountId
+                        vehicleId: $vehicleId
+                        stationId: $stationId
+                        startTime: $startTime
+                        endTime: $endTime
+                        plannedEndTime: $plannedEndTime
+                        totalAmount: $totalAmount
+                        securityDeposit: $securityDeposit
+                        note: $note
+                        rentalStatusTienDtid: $rentalStatusTienDtid
+                        isCompleted: $isCompleted
+                        isActive: $isActive
+                    })
                 }",
-                Variables = new { input = rental }
+                Variables = new { 
+                    rentalTienDtid = rental.RentalTienDtid,
+                    userAccountId = rental.UserAccountId,
+                    vehicleId = rental.VehicleId,
+                    stationId = rental.StationId,
+                    startTime = DateTime.SpecifyKind(rental.StartTime, DateTimeKind.Utc),
+                    endTime = rental.EndTime.HasValue ? DateTime.SpecifyKind(rental.EndTime.Value, DateTimeKind.Utc) : (DateTime?)null,
+                    plannedEndTime = rental.PlannedEndTime.HasValue ? DateTime.SpecifyKind(rental.PlannedEndTime.Value, DateTimeKind.Utc) : (DateTime?)null,
+                    totalAmount = rental.TotalAmount,
+                    securityDeposit = rental.SecurityDeposit,
+                    note = rental.Note,
+                    rentalStatusTienDtid = rental.RentalStatusTienDtid,
+                    isCompleted = rental.IsCompleted,
+                    isActive = rental.IsActive
+                }
             };
 
             var response = await _graphQLClient.SendMutationAsync<UpdateGraphQLResponse>(request);
@@ -88,10 +118,40 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
         {
             var request = new GraphQLRequest
             {
-                Query = @"mutation CreateRentalsTienDt($input: RentalsTienDtInput!) {
-                    createRentalsTienDt(rentalsTienDt: $input)
+                Query = @"mutation CreateRentalsTienDt($rentalTienDtid: Int!, $userAccountId: Int!, $vehicleId: Int!, $stationId: Int!, $startTime: DateTime!, 
+                        $endTime: DateTime, $plannedEndTime: DateTime, $totalAmount: Decimal, $securityDeposit: Decimal!, 
+                        $note: String, $rentalStatusTienDtid: Int, $isCompleted: Boolean, $isActive: Boolean) {
+                    createRentalsTienDt(rentalsTienDt: {
+                        rentalTienDtid: $rentalTienDtid
+                        userAccountId: $userAccountId
+                        vehicleId: $vehicleId
+                        stationId: $stationId
+                        startTime: $startTime
+                        endTime: $endTime
+                        plannedEndTime: $plannedEndTime
+                        totalAmount: $totalAmount
+                        securityDeposit: $securityDeposit
+                        note: $note
+                        rentalStatusTienDtid: $rentalStatusTienDtid
+                        isCompleted: $isCompleted
+                        isActive: $isActive
+                    })
                 }",
-                Variables = new { input = rentalsTienDt }
+                Variables = new { 
+                    rentalTienDtid = rentalsTienDt.RentalTienDtid,
+                    userAccountId = rentalsTienDt.UserAccountId,
+                    vehicleId = rentalsTienDt.VehicleId,
+                    stationId = rentalsTienDt.StationId,
+                    startTime = DateTime.SpecifyKind(rentalsTienDt.StartTime, DateTimeKind.Utc),
+                    endTime = rentalsTienDt.EndTime.HasValue ? DateTime.SpecifyKind(rentalsTienDt.EndTime.Value, DateTimeKind.Utc) : (DateTime?)null,
+                    plannedEndTime = rentalsTienDt.PlannedEndTime.HasValue ? DateTime.SpecifyKind(rentalsTienDt.PlannedEndTime.Value, DateTimeKind.Utc) : (DateTime?)null,
+                    totalAmount = rentalsTienDt.TotalAmount,
+                    securityDeposit = rentalsTienDt.SecurityDeposit,
+                    note = rentalsTienDt.Note,
+                    rentalStatusTienDtid = rentalsTienDt.RentalStatusTienDtid,
+                    isCompleted = rentalsTienDt.IsCompleted,
+                    isActive = rentalsTienDt.IsActive
+                }
             };
 
             var response = await _graphQLClient.SendMutationAsync<CreateGraphQLResponse>(request);
