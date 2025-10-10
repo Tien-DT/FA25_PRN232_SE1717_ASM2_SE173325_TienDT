@@ -20,6 +20,7 @@ else
 				<th>note</th>
 				<th>createdDate</th>
 				<th>isActive</th>
+				<th>Status</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -34,6 +35,7 @@ else
 					<td>@(string.IsNullOrEmpty(item.Note) ? "" : item.Note)</td>
 					<td>@(item.CreatedDate.HasValue ? item.CreatedDate.Value.ToString("g") : string.Empty)</td>
 					<td>@(item.IsActive.HasValue ? (item.IsActive.Value ? "Yes" : "No") : "")</td>
+					<td>@GetStatusName(item.RentalStatusTienDtid)</td>
 				</tr>
 			}
 		</tbody>
@@ -42,16 +44,29 @@ else
 
 @code {
 	private List<RentalsTienDt>? RentalsTienDts;
+	private List<RentalStatusesTienDt>? rentalStatuses;
+	private Dictionary<int, string> statusMap = new Dictionary<int, string>();
 
 	protected override async Task OnInitializedAsync()
 	{
 		try
 		{
 			RentalsTienDts = await _graphQLConsumers.GetRentalsAsync();
+			rentalStatuses = await _graphQLConsumers.GetRentalStatusesTienDtsAsync();
+			statusMap = rentalStatuses.ToDictionary(s => s.RentalStatusTienDtid, s => s.StatusName);
 		}
 		catch (Exception e)
 		{
 			throw new Exception();
 		}
+	}
+
+	private string GetStatusName(int? statusId)
+	{
+		if (statusId.HasValue && statusMap.ContainsKey(statusId.Value))
+		{
+			return statusMap[statusId.Value];
+		}
+		return "N/A";
 	}
 }	

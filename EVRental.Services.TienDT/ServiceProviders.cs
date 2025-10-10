@@ -25,9 +25,9 @@ namespace EVRental.Services.TienDT
         }
 
 
-        public RentalStatusesTienDtService RentalStatusesTienDtService {
-            get{return new RentalStatusesTienDtService()?? new RentalStatusesTienDtService();
-            }
+        public IRentalStatusesTienDtService RentalStatusesTienDtService
+        {
+            get { return new RentalStatusesTienDtService(); }
         }
 
 

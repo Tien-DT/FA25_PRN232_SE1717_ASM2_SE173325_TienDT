@@ -47,14 +47,17 @@
 						</div>
 
 						<div class="form-group">
-							<label for="rentalStatus">Trạng thái</label>
-							<select id="rentalStatus" class="input" @bind="rental.RentalStatusTienDtid">
+							<label for="status">Trạng thái</label>
+							<InputSelect id="status" class="input" @bind-Value="rental.RentalStatusTienDtid">
 								<option value="">-- Chọn trạng thái --</option>
-								@foreach (var s in rentalStatusesTienDts)
+								@if (rentalStatuses != null)
 								{
-									<option value="@s.RentalStatusTienDtid">@s.StatusName</option>
+									@foreach (var status in rentalStatuses)
+									{
+										<option value="@status.RentalStatusTienDtid">@status.StatusName</option>
+									}
 								}
-							</select>
+							</InputSelect>
 						</div>
 
 						<div class="form-group">
@@ -67,11 +70,7 @@
 							<InputDate id="plannedEnd" class="input" @bind-Value="rental.PlannedEndTime" />
 						</div>
 
-						<div class="form-group">
-							<label for="security">Tiền đặt cọc</label>
-							<InputNumber id="security" class="input" @bind-Value="rental.SecurityDeposit" />
-						</div>
-
+						
 						<div class="form-group full-width">
 							<label for="note">Ghi chú</label>
 							<InputTextArea id="note" class="textarea" @bind-Value="rental.Note" />
@@ -106,34 +105,31 @@
 		SecurityDeposit = 0m,
 		IsActive = true
 	};
-	private List<RentalStatusesTienDt> rentalStatusesTienDts = new();
-
 	private string? errorMessage;
 	private bool isLoading;
-	private bool isSubmitting;
-
-
-	protected override async Task OnInitializedAsync()
-	{
-		isLoading = true;
-		try
+		private bool isSubmitting;
+		private List<RentalStatusesTienDt>? rentalStatuses;
+	
+		protected override async Task OnInitializedAsync()
 		{
-			if (Id.HasValue)
+			isLoading = true;
+			try
 			{
-				rental = await GraphQLClient.GetRentalByIdAsync(Id.Value) ?? new RentalsTienDt();
+				rentalStatuses = await GraphQLClient.GetRentalStatusesTienDtsAsync();
+				if (Id.HasValue)
+				{
+					rental = await GraphQLClient.GetRentalByIdAsync(Id.Value) ?? new RentalsTienDt();
+				}
 			}
-			// always load statuses for both create and edit
-			rentalStatusesTienDts = await GraphQLClient.GetRentalStatusesAsync();
+			catch (Exception ex)
+			{
+				errorMessage = "Không thể tải dữ liệu: " + ex.Message;
+			}
+			finally
+			{
+				isLoading = false;
+			}
 		}
-		catch (Exception ex)
-		{
-			errorMessage = "Không thể tải dữ liệu: " + ex.Message;
-		}
-		finally
-		{
-			isLoading = false;
-		}
-	}
 
 	private async Task HandleValidSubmit()
 	{
@@ -149,7 +145,7 @@
 			{
 				await GraphQLClient.CreateRentalsAsync(rental);
 			}
-			Navigation.NavigateTo("/RentalsTienDts"); // Navigate to list page
+			Navigation.NavigateTo("/RentalsTienDts/RentalsTienDtsList"); // Navigate to list page
 		}
 		catch (Exception ex)
 		{

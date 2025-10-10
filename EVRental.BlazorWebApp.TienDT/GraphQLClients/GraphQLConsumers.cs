@@ -29,6 +29,7 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
                     note
                     createdDate
                     isActive
+                    rentalStatusTienDtid
                 }
             }";
 
@@ -38,28 +39,7 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
             return result;
         }
 
-        public async Task<int> CreateRentalsAsync(RentalsTienDt rentalsTienDt)
-        {
-            try
-            {
-                var graphQLRequest = new GraphQLRequest()
-                {
-                    Query = @"mutation CreateRentalsTienDt($input: RentalsTienDtInput!) {
-    createRentalsTienDt(rentalsTienDt: $input)
-}",
-                    Variables = new { input = rentalsTienDt }
-                };
-                var response = await _graphQLClient.SendMutationAsync<CreateGraphQLResponse>(graphQLRequest);
-                var result = response?.Data?.createRentalsTienDt ?? 0;
-                return result;
 
-            }
-            catch (Exception)
-            {
-                // Preserve stack trace; caller can handle/log as needed
-                throw;
-            }
-        }
 
         public async Task<RentalsTienDt?> GetRentalByIdAsync(int id)
         {
@@ -90,27 +70,45 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
 
         public async Task<int> UpdateRentalAsync(RentalsTienDt rental)
         {
-            var mutation = @"mutation UpdateRentalsTienDt($input: RentalsTienDtInput!) {
-                updateRentalsTienDt(rentalsTienDt: $input)
-            }";
+            var request = new GraphQLRequest
+            {
+                Query = @"mutation UpdateRentalsTienDt($input: RentalsTienDtInput!) {
+                    updateRentalsTienDt(rentalsTienDt: $input)
+                }",
+                Variables = new { input = rental }
+            };
 
-            var request = new GraphQLRequest { Query = mutation, Variables = new { input = rental } };
             var response = await _graphQLClient.SendMutationAsync<UpdateGraphQLResponse>(request);
-            return response?.Data?.updateRentalsTienDt ?? 0;
+            return response.Data.updateRentalsTienDt;
         }
 
-        public async Task<List<RentalStatusesTienDt>> GetRentalStatusesAsync()
-        {
-            var query = @"query RentalStatusesTienDts {
-    rentalStatusesTienDts {
-        statusName
-    }
-}";
 
-            var request = new GraphQLRequest { Query = query };
-            var response = await _graphQLClient.SendQueryAsync<RentalStatusesTienDtGraphQLResponse>(request);
-            var result = response?.Data?.rentalStatusesTienDts ?? new List<RentalStatusesTienDt>();
-            return result;
+
+        public async Task<int> CreateRentalsAsync(RentalsTienDt rentalsTienDt)
+        {
+            var request = new GraphQLRequest
+            {
+                Query = @"mutation CreateRentalsTienDt($input: RentalsTienDtInput!) {
+                    createRentalsTienDt(rentalsTienDt: $input)
+                }",
+                Variables = new { input = rentalsTienDt }
+            };
+
+            var response = await _graphQLClient.SendMutationAsync<CreateGraphQLResponse>(request);
+            return response.Data.createRentalsTienDt;
+        }
+
+        public async Task<List<RentalStatusesTienDt>> GetRentalStatusesTienDtsAsync()
+        {
+            var query = @"query GetRentalStatusesTienDts {
+                rentalStatusesTienDts {
+                    rentalStatusTienDtid
+                    statusName
+                }
+            }";
+
+            var response = await _graphQLClient.SendQueryAsync<RentalStatusesTienDtGraphQLResponse>(query);
+            return response?.Data?.rentalStatusesTienDts ?? new List<RentalStatusesTienDt>();
         }
 
     }
@@ -123,6 +121,16 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
     public class UpdateGraphQLResponse
     {
         public int updateRentalsTienDt { get; set; }
+    }
+
+    public class CreateGraphQLResponse
+    {
+        public int createRentalsTienDt { get; set; }
+    }
+
+    public class RentalStatusesTienDtGraphQLResponse
+    {
+        public List<RentalStatusesTienDt> rentalStatusesTienDts { get; set; }
     }
 
 }

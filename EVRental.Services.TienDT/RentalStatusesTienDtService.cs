@@ -2,28 +2,29 @@
 using EVRental.Repositories.TienDT.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace EVRental.Services.TienDT
 {
-    public class RentalStatusesTienDtService
+    public class RentalStatusesTienDtService : IRentalStatusesTienDtService
     {
-        private readonly RentalStatusesTienDtRepository _repository;
         private readonly IUnitOfWork _unitOfWork;
-        public RentalStatusesTienDtService() => _repository = new RentalStatusesTienDtRepository();
 
-        public async Task<List<Repositories.TienDT.Models.RentalStatusesTienDt>> GetAllAsync()
+        public RentalStatusesTienDtService()
+        {
+            _unitOfWork = new UnitOfWork();
+        }
+
+        public async Task<List<RentalStatusesTienDt>> GetAllAsync()
         {
             try
             {
                 return await _unitOfWork.RentalStatusesTienDtRepository.GetAllAsync();
             }
-            catch (Exception ex) { }
-            return new List<RentalStatusesTienDt>();
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting all rental statuses: " + ex.Message);
+            }
         }
-
-
     }
 }

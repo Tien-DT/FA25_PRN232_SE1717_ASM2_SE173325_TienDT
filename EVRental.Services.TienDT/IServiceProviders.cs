@@ -9,7 +9,7 @@ namespace EVRental.Services.TienDT
     public interface IServiceProviders
     {
         IRentalsTienDtService IRentalsTienDtService { get; }
-        RentalStatusesTienDtService RentalStatusesTienDtService { get; }
+        IRentalStatusesTienDtService RentalStatusesTienDtService { get; }
         SystemUserAccountService SystemUserAccountService { get; }
     }
 }
