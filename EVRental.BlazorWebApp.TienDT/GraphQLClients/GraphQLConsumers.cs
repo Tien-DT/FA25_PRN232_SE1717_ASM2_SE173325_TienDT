@@ -29,7 +29,7 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
             }";
 
             var response = await _graphQLClient.SendQueryAsync<RentalsTienDtGraphQLResponse>(query);
-            var result = response?.Data?.rentalsTienDts?.ToList();
+            var result = response?.Data?.rentalsTienDts?.ToList() ?? new List<RentalsTienDt>();
             return result;
         }
 
@@ -54,6 +54,51 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
             }
         }
 
+        public async Task<RentalsTienDt> GetRentalByIdAsync(int id)
+        {
+            var query = @"query RentalById($id: Int!) {
+                rentalById(id: $id) {
+                    rentalTienDtid
+                    userAccountId
+                    vehicleId
+                    stationId
+                    startTime
+                    endTime
+                    plannedEndTime
+                    totalAmount
+                    securityDeposit
+                    note
+                    rentalStatusTienDtid
+                    isCompleted
+                    isActive
+                    createdDate
+                    updatedDate
+                }
+            }";
 
-    } 
+            var response = await _graphQLClient.SendQueryAsync<RentalByIdResponse>(query, new { id });
+            return response?.Data?.rentalById;
+        }
+
+        public async Task<int> UpdateRentalAsync(RentalsTienDt rental)
+        {
+            var mutation = @"mutation UpdateRentalsTienDt($input: RentalsTienDtInput!) {
+                updateRentalsTienDt(rentalsTienDt: $input)
+            }";
+
+            var response = await _graphQLClient.SendMutationAsync<UpdateGraphQLResponse>(mutation, new { input = rental });
+            return response.Data.updateRentalsTienDt;
+        }
+
+    }
+
+    public class RentalByIdResponse
+    {
+        public RentalsTienDt? rentalById { get; set; }
+    }
+
+    public class UpdateGraphQLResponse
+    {
+        public int updateRentalsTienDt { get; set; }
+    }
 }
