@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace EVRental.BlazorWebApp.TienDT.Models;
+
 public partial class RentalStatusesTienDt
 {
     [Key]
@@ -19,4 +20,9 @@ public partial class RentalStatusesTienDt
     public bool? IsActive { get; set; }
 
     public virtual ICollection<RentalsTienDt> RentalsTienDts { get; set; } = new List<RentalsTienDt>();
+}
+
+public partial class RentalStatusesTienDtGraphQLResponse
+{
+    public List<RentalStatusesTienDt> rentalStatusesTienDts { get; set; }
 }

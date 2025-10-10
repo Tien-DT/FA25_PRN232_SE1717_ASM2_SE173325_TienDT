@@ -21,9 +21,14 @@ namespace EVRental.GraphQLWebAPI.TienDT.GraphQLs
 
         public async Task<PaginationResult<List<RentalsTienDt>>> SearchWithPaging(RentalsTienDtSearchRequest searchRequest)
         {
-            return await _serviceProviders.IRentalsTienDtService.SearchWithPaginationAsync(searchRequest);  
+            return await _serviceProviders.IRentalsTienDtService.SearchWithPaginationAsync(searchRequest);
         }
-
+        
+        public async Task<List<RentalStatusesTienDt>> GetRentalStatusesTienDts()
+        {
+            return await _serviceProviders.RentalStatusesTienDtService.GetAllAsync();
+        }
+        
 
     }
 

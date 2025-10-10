@@ -1,4 +1,8 @@
-﻿using EVRental.BlazorWebApp.TienDT.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using EVRental.BlazorWebApp.TienDT.Models;
 using GraphQL;
 using GraphQL.Client.Abstractions;
 
@@ -28,8 +32,9 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
                 }
             }";
 
-            var response = await _graphQLClient.SendQueryAsync<RentalsTienDtGraphQLResponse>(query);
-            var result = response?.Data?.rentalsTienDts?.ToList() ?? new List<RentalsTienDt>();
+            var request = new GraphQLRequest { Query = query };
+            var response = await _graphQLClient.SendQueryAsync<RentalsTienDtGraphQLResponse>(request);
+            var result = response?.Data?.rentalsTienDts ?? new List<RentalsTienDt>();
             return result;
         }
 
@@ -39,22 +44,24 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
             {
                 var graphQLRequest = new GraphQLRequest()
                 {
-                    Query = @"mutation CreateRentalsTienDt ($input: RentalsTienDtInput!) {
-    createRentalsTienDt(rentalsTienDt: $input)}",
-                    Variables = new {input = rentalsTienDt}
+                    Query = @"mutation CreateRentalsTienDt($input: RentalsTienDtInput!) {
+    createRentalsTienDt(rentalsTienDt: $input)
+}",
+                    Variables = new { input = rentalsTienDt }
                 };
                 var response = await _graphQLClient.SendMutationAsync<CreateGraphQLResponse>(graphQLRequest);
-                var result = response.Data.createRentalsTienDt;
+                var result = response?.Data?.createRentalsTienDt ?? 0;
                 return result;
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw new Exception(ex.Message, ex);
+                // Preserve stack trace; caller can handle/log as needed
+                throw;
             }
         }
 
-        public async Task<RentalsTienDt> GetRentalByIdAsync(int id)
+        public async Task<RentalsTienDt?> GetRentalByIdAsync(int id)
         {
             var query = @"query RentalById($id: Int!) {
                 rentalById(id: $id) {
@@ -76,7 +83,8 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
                 }
             }";
 
-            var response = await _graphQLClient.SendQueryAsync<RentalByIdResponse>(query, new { id });
+            var request = new GraphQLRequest { Query = query, Variables = new { id } };
+            var response = await _graphQLClient.SendQueryAsync<RentalByIdResponse>(request);
             return response?.Data?.rentalById;
         }
 
@@ -86,8 +94,23 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
                 updateRentalsTienDt(rentalsTienDt: $input)
             }";
 
-            var response = await _graphQLClient.SendMutationAsync<UpdateGraphQLResponse>(mutation, new { input = rental });
-            return response.Data.updateRentalsTienDt;
+            var request = new GraphQLRequest { Query = mutation, Variables = new { input = rental } };
+            var response = await _graphQLClient.SendMutationAsync<UpdateGraphQLResponse>(request);
+            return response?.Data?.updateRentalsTienDt ?? 0;
+        }
+
+        public async Task<List<RentalStatusesTienDt>> GetRentalStatusesAsync()
+        {
+            var query = @"query RentalStatusesTienDts {
+    rentalStatusesTienDts {
+        statusName
+    }
+}";
+
+            var request = new GraphQLRequest { Query = query };
+            var response = await _graphQLClient.SendQueryAsync<RentalStatusesTienDtGraphQLResponse>(request);
+            var result = response?.Data?.rentalStatusesTienDts ?? new List<RentalStatusesTienDt>();
+            return result;
         }
 
     }
@@ -101,4 +124,5 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
     {
         public int updateRentalsTienDt { get; set; }
     }
+
 }

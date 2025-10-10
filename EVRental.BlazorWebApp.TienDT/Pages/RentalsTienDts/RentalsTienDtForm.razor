@@ -47,6 +47,17 @@
 						</div>
 
 						<div class="form-group">
+							<label for="rentalStatus">Trạng thái</label>
+							<select id="rentalStatus" class="input" @bind="rental.RentalStatusTienDtid">
+								<option value="">-- Chọn trạng thái --</option>
+								@foreach (var s in rentalStatusesTienDts)
+								{
+									<option value="@s.RentalStatusTienDtid">@s.StatusName</option>
+								}
+							</select>
+						</div>
+
+						<div class="form-group">
 							<label for="start">Thời gian bắt đầu</label>
 							<InputDate id="start" class="input" @bind-Value="rental.StartTime" />
 						</div>
@@ -95,28 +106,32 @@
 		SecurityDeposit = 0m,
 		IsActive = true
 	};
+	private List<RentalStatusesTienDt> rentalStatusesTienDts = new();
 
 	private string? errorMessage;
 	private bool isLoading;
 	private bool isSubmitting;
 
+
 	protected override async Task OnInitializedAsync()
 	{
-		if (Id.HasValue)
+		isLoading = true;
+		try
 		{
-			isLoading = true;
-			try
+			if (Id.HasValue)
 			{
 				rental = await GraphQLClient.GetRentalByIdAsync(Id.Value) ?? new RentalsTienDt();
 			}
-			catch (Exception ex)
-			{
-				errorMessage = "Không thể tải dữ liệu: " + ex.Message;
-			}
-			finally
-			{
-				isLoading = false;
-			}
+			// always load statuses for both create and edit
+			rentalStatusesTienDts = await GraphQLClient.GetRentalStatusesAsync();
+		}
+		catch (Exception ex)
+		{
+			errorMessage = "Không thể tải dữ liệu: " + ex.Message;
+		}
+		finally
+		{
+			isLoading = false;
 		}
 	}
 
@@ -156,4 +171,8 @@
 		};
 		errorMessage = null;
 	}
+
+	
+
+	
 }
