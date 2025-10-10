@@ -26,10 +26,22 @@ namespace EVRental.Services.TienDT
         {
             try
             {
-                // Business logic validation before creating
-                if (!await ValidateRentalDataAsync(rentalsTienDt))
+                // Detailed validation with specific error messages
+                var validationError = await GetValidationErrorAsync(rentalsTienDt);
+                if (!string.IsNullOrEmpty(validationError))
                 {
-                    throw new Exception("Invalid rental data");
+                    throw new Exception($"Validation failed: {validationError}");
+                }
+
+                // Set default rental status if not provided
+                if (!rentalsTienDt.RentalStatusTienDtid.HasValue || rentalsTienDt.RentalStatusTienDtid <= 0)
+                {
+                    var statuses = await _unitOfWork.RentalsTienDtRepository.GetRentalStatusesAsync();
+                    var defaultStatus = statuses.FirstOrDefault(s => s.IsActive == true);
+                    if (defaultStatus != null)
+                    {
+                        rentalsTienDt.RentalStatusTienDtid = defaultStatus.RentalStatusTienDtid;
+                    }
                 }
 
                 // Set default values
@@ -42,7 +54,9 @@ namespace EVRental.Services.TienDT
             }
             catch (Exception ex) 
             {
-                throw new Exception($"Error creating rental: {ex.Message}");
+                // Include inner exception details for better debugging
+                var innerMessage = ex.InnerException != null ? $" Inner: {ex.InnerException.Message}" : "";
+                throw new Exception($"Error creating rental: {ex.Message}{innerMessage}", ex);
             }
         }
 
@@ -198,45 +212,60 @@ namespace EVRental.Services.TienDT
         }
 
         // Business validation methods
-        public async Task<bool> ValidateRentalDataAsync(RentalsTienDt rental)
+        public async Task<string> GetValidationErrorAsync(RentalsTienDt rental)
         {
             try
             {
                 // Validate required fields
-                if (rental.UserAccountId <= 0 || rental.VehicleId <= 0 || rental.StationId <= 0)
-                    return false;
+                if (rental.UserAccountId <= 0)
+                    return $"Invalid UserAccountId: {rental.UserAccountId}";
+                
+                if (rental.VehicleId <= 0)
+                    return $"Invalid VehicleId: {rental.VehicleId}";
+                    
+                if (rental.StationId <= 0)
+                    return $"Invalid StationId: {rental.StationId}";
 
                 // Validate dates
                 if (rental.StartTime == default(DateTime))
-                    return false;
+                    return "StartTime is required and cannot be default value";
 
                 if (rental.PlannedEndTime.HasValue && rental.PlannedEndTime <= rental.StartTime)
-                    return false;
+                    return $"PlannedEndTime ({rental.PlannedEndTime}) must be greater than StartTime ({rental.StartTime})";
 
                 // Validate amounts
-                if (rental.SecurityDeposit < 0 || (rental.TotalAmount.HasValue && rental.TotalAmount < 0))
-                    return false;
+                if (rental.SecurityDeposit < 0)
+                    return $"SecurityDeposit cannot be negative: {rental.SecurityDeposit}";
+                    
+                if (rental.TotalAmount.HasValue && rental.TotalAmount < 0)
+                    return $"TotalAmount cannot be negative: {rental.TotalAmount}";
 
                 // Validate note is not empty
                 if (string.IsNullOrWhiteSpace(rental.Note))
-                    return false;
+                    return "Note is required and cannot be empty";
 
                 // Validate foreign key relationships
                 if (!await IsUserAccountValidAsync(rental.UserAccountId))
-                    return false;
+                    return $"UserAccount with ID {rental.UserAccountId} does not exist or is inactive";
 
                 if (!await IsVehicleAvailableAsync(rental.VehicleId))
-                    return false;
+                    return $"Vehicle with ID {rental.VehicleId} is not available or does not exist";
 
                 if (!await IsStationActiveAsync(rental.StationId))
-                    return false;
+                    return $"Station with ID {rental.StationId} is not active or does not exist";
 
-                return true;
+                return string.Empty; // No validation errors
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return false;
+                return $"Validation error: {ex.Message}";
             }
+        }
+
+        public async Task<bool> ValidateRentalDataAsync(RentalsTienDt rental)
+        {
+            var error = await GetValidationErrorAsync(rental);
+            return string.IsNullOrEmpty(error);
         }
 
         public async Task<bool> IsVehicleAvailableAsync(int vehicleId)

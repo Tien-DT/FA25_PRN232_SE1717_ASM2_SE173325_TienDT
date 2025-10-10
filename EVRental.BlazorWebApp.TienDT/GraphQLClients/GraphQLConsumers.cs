@@ -74,8 +74,8 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
             {
                 Query = @"mutation UpdateRentalsTienDt($rentalTienDtid: Int!, $userAccountId: Int!, $vehicleId: Int!, $stationId: Int!, 
                         $startTime: DateTime!, $endTime: DateTime, $plannedEndTime: DateTime, $totalAmount: Decimal, 
-                        $securityDeposit: Decimal!, $note: String, $rentalStatusTienDtid: Int, $isCompleted: Boolean, $isActive: Boolean) {
-                    updateRentalsTienDt(rentalsTienDt: {
+                        $securityDeposit: Decimal!, $note: String!, $rentalStatusTienDtid: Int, $isCompleted: Boolean, $isActive: Boolean) {
+                    updateRentalsTienDt(input: {
                         rentalTienDtid: $rentalTienDtid
                         userAccountId: $userAccountId
                         vehicleId: $vehicleId
@@ -101,7 +101,7 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
                     plannedEndTime = rental.PlannedEndTime.HasValue ? DateTime.SpecifyKind(rental.PlannedEndTime.Value, DateTimeKind.Utc) : (DateTime?)null,
                     totalAmount = rental.TotalAmount,
                     securityDeposit = rental.SecurityDeposit,
-                    note = rental.Note,
+                    note = string.IsNullOrWhiteSpace(rental.Note) ? "No note provided" : rental.Note,
                     rentalStatusTienDtid = rental.RentalStatusTienDtid,
                     isCompleted = rental.IsCompleted,
                     isActive = rental.IsActive
@@ -118,11 +118,10 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
         {
             var request = new GraphQLRequest
             {
-                Query = @"mutation CreateRentalsTienDt($rentalTienDtid: Int!, $userAccountId: Int!, $vehicleId: Int!, $stationId: Int!, $startTime: DateTime!, 
+                Query = @"mutation CreateRentalsTienDt($userAccountId: Int!, $vehicleId: Int!, $stationId: Int!, $startTime: DateTime!, 
                         $endTime: DateTime, $plannedEndTime: DateTime, $totalAmount: Decimal, $securityDeposit: Decimal!, 
-                        $note: String, $rentalStatusTienDtid: Int, $isCompleted: Boolean, $isActive: Boolean) {
-                    createRentalsTienDt(rentalsTienDt: {
-                        rentalTienDtid: $rentalTienDtid
+                        $note: String!, $rentalStatusTienDtid: Int, $isCompleted: Boolean, $isActive: Boolean) {
+                    createRentalsTienDt(input: {
                         userAccountId: $userAccountId
                         vehicleId: $vehicleId
                         stationId: $stationId
@@ -138,7 +137,6 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
                     })
                 }",
                 Variables = new { 
-                    rentalTienDtid = rentalsTienDt.RentalTienDtid,
                     userAccountId = rentalsTienDt.UserAccountId,
                     vehicleId = rentalsTienDt.VehicleId,
                     stationId = rentalsTienDt.StationId,
@@ -147,7 +145,7 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
                     plannedEndTime = rentalsTienDt.PlannedEndTime.HasValue ? DateTime.SpecifyKind(rentalsTienDt.PlannedEndTime.Value, DateTimeKind.Utc) : (DateTime?)null,
                     totalAmount = rentalsTienDt.TotalAmount,
                     securityDeposit = rentalsTienDt.SecurityDeposit,
-                    note = rentalsTienDt.Note,
+                    note = string.IsNullOrWhiteSpace(rentalsTienDt.Note) ? "No note provided" : rentalsTienDt.Note,
                     rentalStatusTienDtid = rentalsTienDt.RentalStatusTienDtid,
                     isCompleted = rentalsTienDt.IsCompleted,
                     isActive = rentalsTienDt.IsActive

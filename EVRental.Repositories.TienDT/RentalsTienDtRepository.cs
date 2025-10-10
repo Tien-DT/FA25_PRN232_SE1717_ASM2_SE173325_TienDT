@@ -72,13 +72,22 @@ namespace EVRental.Repositories.TienDT
         // Create with validation
         public new async Task<int> CreateAsync(RentalsTienDt entity)
         {
-            entity.CreatedDate = DateTime.Now;
-            entity.UpdatedDate = DateTime.Now;
-            entity.IsActive = true;
-            entity.IsCompleted = false;
-            
-            _context.Add(entity);
-            return await _context.SaveChangesAsync();
+            try
+            {
+                entity.CreatedDate = DateTime.Now;
+                entity.UpdatedDate = DateTime.Now;
+                entity.IsActive = true;
+                entity.IsCompleted = false;
+                
+                _context.Add(entity);
+                return await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // Provide detailed database error information
+                var innerMessage = dbEx.InnerException != null ? dbEx.InnerException.Message : dbEx.Message;
+                throw new Exception($"Database error while creating rental: {innerMessage}", dbEx);
+            }
         }
 
         // Update with validation

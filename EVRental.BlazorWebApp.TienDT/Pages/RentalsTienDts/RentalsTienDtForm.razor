@@ -111,7 +111,11 @@
 	{
 		StartTime = DateTime.Now,
 		SecurityDeposit = 0m,
-		IsActive = true
+		IsActive = true,
+		Note = "",  // Initialize Note to prevent null
+		UserAccountId = 1,  // Set default user (you may want to get from session)
+		VehicleId = 1,  // Set default vehicle
+		StationId = 1   // Set default station
 	};
 	private string? errorMessage;
 	private bool isLoading;
