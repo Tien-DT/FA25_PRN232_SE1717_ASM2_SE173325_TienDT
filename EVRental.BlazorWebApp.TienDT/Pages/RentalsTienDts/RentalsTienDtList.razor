@@ -3,6 +3,13 @@
 @inject EVRental.BlazorWebApp.TienDT.GraphQLClients.GraphQLConsumers _graphQLConsumers
 @inject NavigationManager NavigationManager
 
+@if (_isLoading)
+{
+    <div class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+}
+
 <h1>RentalsTienDtList</h1>
 
 @if (RentalsTienDts == null)
@@ -55,9 +62,11 @@ else
     private List<RentalsTienDt>? RentalsTienDts;
     private List<RentalStatusesTienDt>? rentalStatuses;
     private Dictionary<int, string> statusMap = new Dictionary<int, string>();
+    private bool _isLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
+        _isLoading = true;
         try
         {
             RentalsTienDts = await _graphQLConsumers.GetRentalsAsync();
@@ -68,6 +77,10 @@ else
         {
             // Proper error handling would be better here
             Console.WriteLine($"Error loading data: {e.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
         }
     }
 
@@ -92,6 +105,7 @@ else
 
     private async Task DeleteRental(int rentalId)
     {
+        _isLoading = true;
         try
         {
             var success = await _graphQLConsumers.DeleteRentalAsync(rentalId);
@@ -99,7 +113,6 @@ else
             {
                 // Refresh the list after deletion
                 RentalsTienDts = await _graphQLConsumers.GetRentalsAsync();
-                StateHasChanged(); // Notify Blazor to re-render the component
             }
             else
             {
@@ -110,6 +123,11 @@ else
         catch (Exception e)
         {
             Console.WriteLine($"Error deleting rental: {e.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged(); // Notify Blazor to re-render the component
         }
     }
 }
