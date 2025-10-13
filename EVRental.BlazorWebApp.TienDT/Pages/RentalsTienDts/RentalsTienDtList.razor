@@ -3,7 +3,7 @@
 @inject EVRental.BlazorWebApp.TienDT.GraphQLClients.GraphQLConsumers _graphQLConsumers
 @inject NavigationManager NavigationManager
 
-<h3>RentalsTienDtList</h3>
+<h1>RentalsTienDtList</h1>
 
 @if (RentalsTienDts == null)
 {
@@ -12,8 +12,8 @@
 else
 {
     <a href="/RentalsTienDts/RentalsTienDtForm" class="btn btn-primary mb-3">Create New Rental</a>
-    <table class="table table-striped table-hover">
-        <thead class="thead-dark">
+    <table class="table">
+        <thead>
             <tr>
                 <th>ID</th>
                 <th>User Account</th>
