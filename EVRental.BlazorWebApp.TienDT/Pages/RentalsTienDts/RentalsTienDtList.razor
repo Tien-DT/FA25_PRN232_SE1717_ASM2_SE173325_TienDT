@@ -1,72 +1,115 @@
 ﻿@page "/RentalsTienDts/RentalsTienDtsList"
 @using EVRental.BlazorWebApp.TienDT.Models
 @inject EVRental.BlazorWebApp.TienDT.GraphQLClients.GraphQLConsumers _graphQLConsumers
+@inject NavigationManager NavigationManager
+
 <h3>RentalsTienDtList</h3>
+
 @if (RentalsTienDts == null)
 {
-	<p><em>Loading...</em></p>
+    <p><em>Loading...</em></p>
 }
 else
 {
-	<a href="/RentalsTienDts/RentalsTienDtForm" class="btn btn-danger">Create</a>
-	<table class="table">
-		<thead>
-			<tr>
-				<th>rentalTienDtid</th>
-				<th>userAccountId</th>
-				<th>vehicleId</th>
-				<th>totalAmount</th>
-				<th>securityDeposit</th>
-				<th>note</th>
-				<th>createdDate</th>
-				<th>isActive</th>
-				<th>Status</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var item in RentalsTienDts)
-			{
-				<tr>
-					<td>@item.RentalTienDtid</td>
-					<td>@item.UserAccountId</td>
-					<td>@item.VehicleId</td>
-					<td>@(item.TotalAmount.HasValue ? item.TotalAmount.Value.ToString("C") : string.Empty)</td>
-					<td>@item.SecurityDeposit.ToString("C")</td>
-					<td>@(string.IsNullOrEmpty(item.Note) ? "" : item.Note)</td>
-					<td>@(item.CreatedDate.HasValue ? item.CreatedDate.Value.ToString("g") : string.Empty)</td>
-					<td>@(item.IsActive.HasValue ? (item.IsActive.Value ? "Yes" : "No") : "")</td>
-					<td>@GetStatusName(item.RentalStatusTienDtid)</td>
-				</tr>
-			}
-		</tbody>
-	</table>
+    <a href="/RentalsTienDts/RentalsTienDtForm" class="btn btn-primary mb-3">Create New Rental</a>
+    <table class="table table-striped table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>User Account</th>
+                <th>Vehicle</th>
+                <th>Total Amount</th>
+                <th>Security Deposit</th>
+                <th>Note</th>
+                <th>Created Date</th>
+                <th>Active</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in RentalsTienDts)
+            {
+                <tr>
+                    <td>@item.RentalTienDtid</td>
+                    <td>@item.UserAccountId</td>
+                    <td>@item.VehicleId</td>
+                    <td>@(item.TotalAmount.HasValue ? item.TotalAmount.Value.ToString("C") : string.Empty)</td>
+                    <td>@item.SecurityDeposit.ToString("C")</td>
+                    <td>@(string.IsNullOrEmpty(item.Note) ? "" : item.Note)</td>
+                    <td>@(item.CreatedDate.HasValue ? item.CreatedDate.Value.ToString("g") : string.Empty)</td>
+                    <td>@(item.IsActive.HasValue ? (item.IsActive.Value ? "Yes" : "No") : "")</td>
+                    <td>@GetStatusName(item.RentalStatusTienDtid)</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" @onclick="() => NavigateToDetail(item.RentalTienDtid)">Detail</button>
+                        <button class="btn btn-warning btn-sm" @onclick="() => NavigateToUpdate(item.RentalTienDtid)">Update</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteRental(item.RentalTienDtid)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
 
 @code {
-	private List<RentalsTienDt>? RentalsTienDts;
-	private List<RentalStatusesTienDt>? rentalStatuses;
-	private Dictionary<int, string> statusMap = new Dictionary<int, string>();
+    private List<RentalsTienDt>? RentalsTienDts;
+    private List<RentalStatusesTienDt>? rentalStatuses;
+    private Dictionary<int, string> statusMap = new Dictionary<int, string>();
 
-	protected override async Task OnInitializedAsync()
-	{
-		try
-		{
-			RentalsTienDts = await _graphQLConsumers.GetRentalsAsync();
-			rentalStatuses = await _graphQLConsumers.GetRentalStatusesTienDtsAsync();
-			statusMap = rentalStatuses.ToDictionary(s => s.RentalStatusTienDtid, s => s.StatusName);
-		}
-		catch (Exception e)
-		{
-			throw new Exception();
-		}
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            RentalsTienDts = await _graphQLConsumers.GetRentalsAsync();
+            rentalStatuses = await _graphQLConsumers.GetRentalStatusesTienDtsAsync();
+            statusMap = rentalStatuses.ToDictionary(s => s.RentalStatusTienDtid, s => s.StatusName);
+        }
+        catch (Exception e)
+        {
+            // Proper error handling would be better here
+            Console.WriteLine($"Error loading data: {e.Message}");
+        }
+    }
 
-	private string GetStatusName(int? statusId)
-	{
-		if (statusId.HasValue && statusMap.ContainsKey(statusId.Value))
-		{
-			return statusMap[statusId.Value];
-		}
-		return "N/A";
-	}
-}	
+    private string GetStatusName(int? statusId)
+    {
+        if (statusId.HasValue && statusMap.ContainsKey(statusId.Value))
+        {
+            return statusMap[statusId.Value];
+        }
+        return "N/A";
+    }
+
+    private void NavigateToDetail(int rentalId)
+    {
+        NavigationManager.NavigateTo($"/RentalsTienDts/RentalsTienDtDetail/{rentalId}");
+    }
+
+    private void NavigateToUpdate(int rentalId)
+    {
+        NavigationManager.NavigateTo($"/RentalsTienDts/RentalsTienDtForm/{rentalId}");
+    }
+
+    private async Task DeleteRental(int rentalId)
+    {
+        try
+        {
+            var success = await _graphQLConsumers.DeleteRentalAsync(rentalId);
+            if (success)
+            {
+                // Refresh the list after deletion
+                RentalsTienDts = await _graphQLConsumers.GetRentalsAsync();
+                StateHasChanged(); // Notify Blazor to re-render the component
+            }
+            else
+            {
+                // Handle deletion failure
+                Console.WriteLine($"Failed to delete rental with ID: {rentalId}");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error deleting rental: {e.Message}");
+        }
+    }
+}

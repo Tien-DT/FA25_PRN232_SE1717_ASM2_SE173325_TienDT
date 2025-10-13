@@ -156,6 +156,20 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
             return response.Data.createRentalsTienDt;
         }
 
+        public async Task<bool> DeleteRentalAsync(int rentalId)
+        {
+            var request = new GraphQLRequest
+            {
+                Query = @"mutation DeleteRentalsTienDt($rentalTienDtid: Int!) {
+                    deleteRentalsTienDt(rentalTienDtid: $rentalTienDtid)
+                }",
+                Variables = new { rentalTienDtid = rentalId }
+            };
+
+            var response = await _graphQLClient.SendMutationAsync<DeleteGraphQLResponse>(request);
+            return response.Data.deleteRentalsTienDt;
+        }
+
         public async Task<List<RentalStatusesTienDt>> GetRentalStatusesTienDtsAsync()
         {
             var query = @"query GetRentalStatusesTienDts {
@@ -179,6 +193,10 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
     public class UpdateGraphQLResponse
     {
         public int updateRentalsTienDt { get; set; }
+    }
+    public class DeleteGraphQLResponse
+    {
+        public bool deleteRentalsTienDt { get; set; }
     }
 
     public class CreateGraphQLResponse

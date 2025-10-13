@@ -56,9 +56,9 @@ namespace EVRental.GraphQLWebAPI.TienDT.GraphQLs
             return await serviceProviders.IRentalsTienDtService.UpdateAsync(rentalsTienDt);
         }
 
-        public async Task<bool> DeleteRentalsTienDt(int id) 
+        public async Task<bool> DeleteRentalsTienDt(int rentalTienDtid) 
         {
-            return await serviceProviders.IRentalsTienDtService.DeleteAsync(id);
+            return await serviceProviders.IRentalsTienDtService.DeleteAsync(rentalTienDtid);
         }
     }
 }

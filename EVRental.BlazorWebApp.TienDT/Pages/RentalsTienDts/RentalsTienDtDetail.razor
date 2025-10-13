@@ -1,7 +1,71 @@
 ﻿@page "/RentalsTienDts/RentalsTienDtDetail/{RentalsTienDtId:int}"
-<h3>RentalsTienDtDetail</h3>
-<h3>@RentalsTienDtId</h3>
+@using EVRental.BlazorWebApp.TienDT.Models
+@inject EVRental.BlazorWebApp.TienDT.GraphQLClients.GraphQLConsumers _graphQLConsumers
+@inject NavigationManager NavigationManager
+
+<h3>Rental Details</h3>
+
+@if (rental == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="card">
+        <div class="card-header">
+            <h4>Rental ID: @rental.RentalTienDtid</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>User Account ID:</strong> @rental.UserAccountId</p>
+                    <p><strong>Vehicle ID:</strong> @rental.VehicleId</p>
+                    <p><strong>Station ID:</strong> @rental.StationId</p>
+                    <p><strong>Status ID:</strong> @rental.RentalStatusTienDtid</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Start Time:</strong> @rental.StartTime.ToString("g")</p>
+                    <p><strong>End Time:</strong> @(rental.EndTime.HasValue ? rental.EndTime.Value.ToString("g") : "N/A")</p>
+                    <p><strong>Planned End Time:</strong> @(rental.PlannedEndTime.HasValue ? rental.PlannedEndTime.Value.ToString("g") : "N/A")</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Total Amount:</strong> @rental.TotalAmount?.ToString("C")</p>
+                    <p><strong>Security Deposit:</strong> @rental.SecurityDeposit.ToString("C")</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Completed:</strong> @(rental.IsCompleted.HasValue ? (rental.IsCompleted.Value ? "Yes" : "No") : "N/A")</p>
+                    <p><strong>Active:</strong> @(rental.IsActive.HasValue ? (rental.IsActive.Value ? "Yes" : "No") : "N/A")</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <p><strong>Note:</strong> @rental.Note</p>
+                    <p><strong>Created Date:</strong> @(rental.CreatedDate.HasValue ? rental.CreatedDate.Value.ToString("g") : "N/A")</p>
+                    <p><strong>Updated Date:</strong> @(rental.UpdatedDate.HasValue ? rental.UpdatedDate.Value.ToString("g") : "N/A")</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button class="btn btn-secondary" @onclick="BackToList">Back to List</button>
+        </div>
+    </div>
+}
+
 @code {
     [Parameter]
     public int RentalsTienDtId { get; set; }
+
+    private RentalsTienDt? rental;
+
+    protected override async Task OnInitializedAsync()
+    {
+        rental = await _graphQLConsumers.GetRentalByIdAsync(RentalsTienDtId);
+    }
+
+    private void BackToList()
+    {
+        NavigationManager.NavigateTo("/RentalsTienDts/RentalsTienDtsList");
+    }
 }

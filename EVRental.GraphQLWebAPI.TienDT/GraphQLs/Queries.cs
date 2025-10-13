@@ -1,6 +1,7 @@
 ﻿using EVRental.Repositories.TienDT.Models;
 using EVRental.Repositories.TienDT.ModelExtensions;
 using EVRental.Services.TienDT;
+using HotChocolate;
 
 namespace EVRental.GraphQLWebAPI.TienDT.GraphQLs
 {
@@ -14,7 +15,8 @@ namespace EVRental.GraphQLWebAPI.TienDT.GraphQLs
             return await _serviceProviders.IRentalsTienDtService.GetAllAsync();
         }
 
-        public async Task<RentalsTienDt> GetRentalsTienDtByIdAsync(int id)
+        [GraphQLName("rentalById")]
+        public async Task<RentalsTienDt> GetRentalByIdAsync(int id)
         {
             return await _serviceProviders.IRentalsTienDtService.GetByIdAsync(id);
         }
