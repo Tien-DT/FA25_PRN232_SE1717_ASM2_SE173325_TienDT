@@ -31,14 +31,6 @@
 
 				<div class="card-body">
 					<div class="grid">
-						@if (!Id.HasValue)
-						{
-							<div class="form-group">
-								<label for="rentalId">Mã thuê xe (RentalTienDtid)</label>
-								<InputNumber id="rentalId" class="input" @bind-Value="rental.RentalTienDtid" />
-							</div>
-						}
-
 						<div class="form-group">
 							<label for="userAccount">Người thuê (UserAccountId)</label>
 							<InputNumber id="userAccount" class="input" @bind-Value="rental.UserAccountId" />
@@ -78,7 +70,30 @@
 							<InputDate id="plannedEnd" class="input" @bind-Value="rental.PlannedEndTime" />
 						</div>
 
+						<div class="form-group">
+							<label for="end">Thời gian kết thúc</label>
+							<InputDate id="end" class="input" @bind-Value="rental.EndTime" />
+						</div>
+
+						<div class="form-group">
+							<label for="totalAmount">Tổng tiền</label>
+							<InputNumber id="totalAmount" class="input" @bind-Value="rental.TotalAmount" />
+						</div>
+
+						<div class="form-group">
+							<label for="securityDeposit">Tiền đặt cọc</label>
+							<InputNumber id="securityDeposit" class="input" @bind-Value="rental.SecurityDeposit" />
+						</div>
+
+							<div class="form-group">
+								<label for="isCompleted">Hoàn thành</label>
+								<InputCheckbox id="isCompleted" class="input" @bind-Value="IsCompleted" />
+							</div>
 						
+							<div class="form-group">
+								<label for="isActive">Hoạt động</label>
+								<InputCheckbox id="isActive" class="input" @bind-Value="IsActive" />
+							</div>						
 						<div class="form-group full-width">
 							<label for="note">Ghi chú</label>
 							<InputTextArea id="note" class="textarea" @bind-Value="rental.Note" />
@@ -167,6 +182,18 @@
 		{
 			isSubmitting = false;
 		}
+	}
+
+	private bool IsCompleted
+	{
+		get => rental.IsCompleted ?? false;
+		set => rental.IsCompleted = value;
+	}
+
+	private bool IsActive
+	{
+		get => rental.IsActive ?? false;
+		set => rental.IsActive = value;
 	}
 
 	private void ResetForm()

@@ -36,22 +36,24 @@ namespace EVRental.GraphQLWebAPI.TienDT.GraphQLs
 
         public async Task<int> UpdateRentalsTienDt(UpdateRentalInput input)
         {
-            var rentalsTienDt = new RentalsTienDt
+            var rentalsTienDt = await serviceProviders.IRentalsTienDtService.GetByIdAsync(input.RentalTienDtid);
+            if (rentalsTienDt == null)
             {
-                RentalTienDtid = input.RentalTienDtid,
-                UserAccountId = input.UserAccountId,
-                VehicleId = input.VehicleId,
-                StationId = input.StationId,
-                StartTime = input.StartTime,
-                EndTime = input.EndTime,
-                PlannedEndTime = input.PlannedEndTime,
-                TotalAmount = input.TotalAmount,
-                SecurityDeposit = input.SecurityDeposit,
-                Note = input.Note ?? string.Empty,
-                RentalStatusTienDtid = input.RentalStatusTienDtid,
-                IsCompleted = input.IsCompleted,
-                IsActive = input.IsActive
-            };
+                throw new Exception("Rental not found");
+            }
+
+            rentalsTienDt.UserAccountId = input.UserAccountId;
+            rentalsTienDt.VehicleId = input.VehicleId;
+            rentalsTienDt.StationId = input.StationId;
+            rentalsTienDt.StartTime = input.StartTime;
+            rentalsTienDt.EndTime = input.EndTime;
+            rentalsTienDt.PlannedEndTime = input.PlannedEndTime;
+            rentalsTienDt.TotalAmount = input.TotalAmount;
+            rentalsTienDt.SecurityDeposit = input.SecurityDeposit;
+            rentalsTienDt.Note = input.Note ?? string.Empty;
+            rentalsTienDt.RentalStatusTienDtid = input.RentalStatusTienDtid;
+            rentalsTienDt.IsCompleted = input.IsCompleted;
+            rentalsTienDt.IsActive = input.IsActive;
             
             return await serviceProviders.IRentalsTienDtService.UpdateAsync(rentalsTienDt);
         }
