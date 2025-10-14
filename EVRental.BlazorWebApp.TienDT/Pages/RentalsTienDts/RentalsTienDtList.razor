@@ -35,7 +35,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in RentalsTienDts)
+            @foreach (var item in PaginatedRentals)
             {
                 <tr>
                     <td>@item.RentalTienDtid</td>
@@ -56,6 +56,88 @@ else
             }
         </tbody>
     </table>
+    
+    @if (totalPages > 1)
+    {
+        <div class="pagination-container mt-3">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                        <button class="page-link" @onclick="() => GoToPage(currentPage - 1)" disabled="@(currentPage == 1)">
+                            Previous
+                        </button>
+                    </li>
+                    
+                    @if (totalPages <= 7)
+                    {
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            int pageNumber = i;
+                            <li class="page-item @(currentPage == pageNumber ? "active" : "")">
+                                <button class="page-link" @onclick="() => GoToPage(pageNumber)">
+                                    @pageNumber
+                                </button>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        @if (currentPage > 3)
+                        {
+                            <li class="page-item">
+                                <button class="page-link" @onclick="() => GoToPage(1)">1</button>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+                        
+                        @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+                        {
+                            int pageNumber = i;
+                            <li class="page-item @(currentPage == pageNumber ? "active" : "")">
+                                <button class="page-link" @onclick="() => GoToPage(pageNumber)">
+                                    @pageNumber
+                                </button>
+                            </li>
+                        }
+                        
+                        @if (currentPage < totalPages - 2)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                            <li class="page-item">
+                                <button class="page-link" @onclick="() => GoToPage(totalPages)">@totalPages</button>
+                            </li>
+                        }
+                    }
+                    
+                    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                        <button class="page-link" @onclick="() => GoToPage(currentPage + 1)" disabled="@(currentPage == totalPages)">
+                            Next
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="text-center mt-2">
+                <span class="text-muted">
+                    Page @currentPage of @totalPages (Total items: @(RentalsTienDts?.Count ?? 0))
+                </span>
+            </div>
+            
+            <div class="text-center mt-2">
+                <label class="me-2">Items per page:</label>
+                <select class="form-select form-select-sm d-inline-block w-auto" @onchange="ChangePageSize">
+                    <option value="5">5</option>
+                    <option value="10" selected="@(pageSize == 10)">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+        </div>
+    }
 }
 
 @code {
@@ -63,6 +145,24 @@ else
     private List<RentalStatusesTienDt>? rentalStatuses;
     private Dictionary<int, string> statusMap = new Dictionary<int, string>();
     private bool _isLoading = false;
+    
+    // Pagination variables
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalPages = 0;
+    
+    private List<RentalsTienDt> PaginatedRentals
+    {
+        get
+        {
+            if (RentalsTienDts == null) return new List<RentalsTienDt>();
+            
+            return RentalsTienDts
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -72,6 +172,12 @@ else
             RentalsTienDts = await _graphQLConsumers.GetRentalsAsync();
             rentalStatuses = await _graphQLConsumers.GetRentalStatusesTienDtsAsync();
             statusMap = rentalStatuses.ToDictionary(s => s.RentalStatusTienDtid, s => s.StatusName);
+            
+            // Calculate total pages
+            if (RentalsTienDts != null && RentalsTienDts.Count > 0)
+            {
+                totalPages = (int)Math.Ceiling((double)RentalsTienDts.Count / pageSize);
+            }
         }
         catch (Exception e)
         {
@@ -113,6 +219,17 @@ else
             {
                 // Refresh the list after deletion
                 RentalsTienDts = await _graphQLConsumers.GetRentalsAsync();
+                
+                // Recalculate total pages
+                if (RentalsTienDts != null && RentalsTienDts.Count > 0)
+                {
+                    totalPages = (int)Math.Ceiling((double)RentalsTienDts.Count / pageSize);
+                    // If current page is now beyond total pages, go to last page
+                    if (currentPage > totalPages)
+                    {
+                        currentPage = totalPages;
+                    }
+                }
             }
             else
             {
@@ -128,6 +245,32 @@ else
         {
             _isLoading = false;
             StateHasChanged(); // Notify Blazor to re-render the component
+        }
+    }
+
+    private void GoToPage(int pageNumber)
+    {
+        if (pageNumber >= 1 && pageNumber <= totalPages)
+        {
+            currentPage = pageNumber;
+            StateHasChanged();
+        }
+    }
+
+    private void ChangePageSize(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var newPageSize))
+        {
+            pageSize = newPageSize;
+            currentPage = 1; // Reset to first page
+            
+            // Recalculate total pages
+            if (RentalsTienDts != null && RentalsTienDts.Count > 0)
+            {
+                totalPages = (int)Math.Ceiling((double)RentalsTienDts.Count / pageSize);
+            }
+            
+            StateHasChanged();
         }
     }
 }
