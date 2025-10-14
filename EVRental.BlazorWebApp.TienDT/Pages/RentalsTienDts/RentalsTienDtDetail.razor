@@ -3,55 +3,289 @@
 @inject EVRental.BlazorWebApp.TienDT.GraphQLClients.GraphQLConsumers _graphQLConsumers
 @inject NavigationManager NavigationManager
 
-<h3>Rental Details</h3>
+<style>
+    .detail-header {
+        background: linear-gradient(135deg, var(--vintage-primary) 0%, var(--vintage-secondary) 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px 8px 0 0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
 
-@if (rental == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <div class="card">
-        <div class="card-header">
-            <h4>Rental ID: @rental.RentalTienDtid</h4>
+    .detail-header h1 {
+        color: white;
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+    }
+
+    .detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .detail-card {
+        background: white;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .status-bar {
+        display: flex;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-bottom: 2px solid var(--vintage-border);
+    }
+
+    .status-badge-large {
+        padding: 0.5rem 1.25rem;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .badge-active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .badge-inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .badge-completed {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+
+    .badge-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .detail-sections {
+        padding: 2rem;
+    }
+
+    .detail-section {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--vintage-border);
+    }
+
+    .detail-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--vintage-text);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .info-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-value {
+        font-size: 1.1rem;
+        color: var(--vintage-text);
+        font-weight: 500;
+    }
+
+    .info-value-large {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--vintage-primary);
+    }
+
+    .note-box {
+        background: #f8f9fa;
+        padding: 1.25rem;
+        border-radius: 8px;
+        border-left: 4px solid var(--vintage-primary);
+    }
+
+    .action-footer {
+        padding: 1.5rem 2rem;
+        background: #f8f9fa;
+        border-top: 2px solid var(--vintage-border);
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-back {
+        background-color: var(--vintage-secondary);
+        color: white;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-back:hover {
+        background-color: var(--vintage-text);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transform: translateY(-2px);
+    }
+
+    .loading-state {
+        text-align: center;
+        padding: 4rem;
+        color: #6c757d;
+    }
+</style>
+
+<div class="detail-container">
+    @if (rental == null)
+    {
+        <div class="loading-state">
+            <div class="spinner mx-auto mb-3"></div>
+            <p><em>Loading rental details...</em></p>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <p><strong>User Account ID:</strong> @rental.UserAccountId</p>
-                    <p><strong>Vehicle ID:</strong> @rental.VehicleId</p>
-                    <p><strong>Station ID:</strong> @rental.StationId</p>
-                    <p><strong>Status ID:</strong> @rental.RentalStatusTienDtid</p>
+    }
+    else
+    {
+        <div class="detail-header">
+            <h1>🚗 Rental Details #@rental.RentalTienDtid</h1>
+        </div>
+
+        <div class="detail-card">
+            <div class="status-bar">
+                <span class="status-badge-large @(rental.IsActive.HasValue && rental.IsActive.Value ? "badge-active" : "badge-inactive")">
+                    @(rental.IsActive.HasValue && rental.IsActive.Value ? "🟢 Active" : "🔴 Inactive")
+                </span>
+                <span class="status-badge-large @(rental.IsCompleted.HasValue && rental.IsCompleted.Value ? "badge-completed" : "badge-pending")">
+                    @(rental.IsCompleted.HasValue && rental.IsCompleted.Value ? "✅ Completed" : "⏳ In Progress")
+                </span>
+            </div>
+
+            <div class="detail-sections">
+                <div class="detail-section">
+                    <h2 class="section-title">👥 Participant Information</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">👤 User Account ID</span>
+                            <span class="info-value">@rental.UserAccountId</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">🚙 Vehicle ID</span>
+                            <span class="info-value">@rental.VehicleId</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">🏢 Station ID</span>
+                            <span class="info-value">@rental.StationId</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">📊 Status ID</span>
+                            <span class="info-value">@rental.RentalStatusTienDtid</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <p><strong>Start Time:</strong> @rental.StartTime.ToString("g")</p>
-                    <p><strong>End Time:</strong> @(rental.EndTime.HasValue ? rental.EndTime.Value.ToString("g") : "N/A")</p>
-                    <p><strong>Planned End Time:</strong> @(rental.PlannedEndTime.HasValue ? rental.PlannedEndTime.Value.ToString("g") : "N/A")</p>
+
+                <div class="detail-section">
+                    <h2 class="section-title">⏰ Time Information</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">🚀 Start Time</span>
+                            <span class="info-value">@rental.StartTime.ToString("MMM dd, yyyy HH:mm")</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">🏁 End Time</span>
+                            <span class="info-value">@(rental.EndTime.HasValue ? rental.EndTime.Value.ToString("MMM dd, yyyy HH:mm") : "Not ended yet")</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">📅 Planned End Time</span>
+                            <span class="info-value">@(rental.PlannedEndTime.HasValue ? rental.PlannedEndTime.Value.ToString("MMM dd, yyyy HH:mm") : "N/A")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h2 class="section-title">💰 Financial Information</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">💵 Total Amount</span>
+                            <span class="info-value-large">@(rental.TotalAmount.HasValue ? rental.TotalAmount.Value.ToString("C") : "N/A")</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">🔒 Security Deposit</span>
+                            <span class="info-value-large">@rental.SecurityDeposit.ToString("C")</span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(rental.Note))
+                {
+                    <div class="detail-section">
+                        <h2 class="section-title">📝 Additional Notes</h2>
+                        <div class="note-box">
+                            <p class="info-value mb-0">@rental.Note</p>
+                        </div>
+                    </div>
+                }
+
+                <div class="detail-section">
+                    <h2 class="section-title">📋 Metadata</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">📅 Created Date</span>
+                            <span class="info-value">@(rental.CreatedDate.HasValue ? rental.CreatedDate.Value.ToString("MMM dd, yyyy HH:mm") : "N/A")</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">🔄 Updated Date</span>
+                            <span class="info-value">@(rental.UpdatedDate.HasValue ? rental.UpdatedDate.Value.ToString("MMM dd, yyyy HH:mm") : "N/A")</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <p><strong>Total Amount:</strong> @rental.TotalAmount?.ToString("C")</p>
-                    <p><strong>Security Deposit:</strong> @rental.SecurityDeposit.ToString("C")</p>
-                </div>
-                <div class="col-md-6">
-                    <p><strong>Completed:</strong> @(rental.IsCompleted.HasValue ? (rental.IsCompleted.Value ? "Yes" : "No") : "N/A")</p>
-                    <p><strong>Active:</strong> @(rental.IsActive.HasValue ? (rental.IsActive.Value ? "Yes" : "No") : "N/A")</p>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12">
-                    <p><strong>Note:</strong> @rental.Note</p>
-                    <p><strong>Created Date:</strong> @(rental.CreatedDate.HasValue ? rental.CreatedDate.Value.ToString("g") : "N/A")</p>
-                    <p><strong>Updated Date:</strong> @(rental.UpdatedDate.HasValue ? rental.UpdatedDate.Value.ToString("g") : "N/A")</p>
-                </div>
+
+            <div class="action-footer">
+                <button class="btn-back" @onclick="BackToList">
+                    ← Back to List
+                </button>
             </div>
         </div>
-        <div class="card-footer">
-            <button class="btn btn-secondary" @onclick="BackToList">Back to List</button>
-        </div>
-    </div>
-}
+    }
+</div>
 
 @code {
     [Parameter]

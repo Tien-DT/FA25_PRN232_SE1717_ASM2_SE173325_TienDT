@@ -3,6 +3,199 @@
 @inject EVRental.BlazorWebApp.TienDT.GraphQLClients.GraphQLConsumers _graphQLConsumers
 @inject NavigationManager NavigationManager
 
+<style>
+    .rentals-header {
+        background: linear-gradient(135deg, var(--vintage-primary) 0%, var(--vintage-secondary) 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .rentals-header h1 {
+        color: white;
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+    }
+
+    .rental-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--vintage-primary);
+    }
+
+    .rental-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+
+    .rental-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--vintage-border);
+    }
+
+    .rental-id {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: var(--vintage-text);
+    }
+
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .active-badge {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .inactive-badge {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .rental-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+        color: var(--vintage-text);
+        font-weight: 600;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-modern {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-view {
+        background-color: var(--vintage-info);
+        color: white;
+    }
+
+    .btn-view:hover {
+        background-color: #8fb3b3;
+        transform: scale(1.05);
+    }
+
+    .btn-edit {
+        background-color: var(--vintage-warning);
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background-color: #d5a466;
+        transform: scale(1.05);
+    }
+
+    .btn-delete {
+        background-color: var(--vintage-danger);
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background-color: #b56e6f;
+        transform: scale(1.05);
+    }
+
+    .btn-create {
+        background-color: var(--vintage-primary);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn-create:hover {
+        background-color: var(--vintage-secondary);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transform: translateY(-2px);
+    }
+
+    .pagination-modern {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-top: 2rem;
+    }
+
+    .page-link {
+        color: var(--vintage-text);
+        background-color: white;
+        border: 1px solid var(--vintage-border);
+        margin: 0 0.25rem;
+        border-radius: 5px;
+    }
+
+    .page-link:hover {
+        background-color: var(--vintage-border);
+        border-color: var(--vintage-secondary);
+    }
+
+    .page-item.active .page-link {
+        background-color: var(--vintage-primary);
+        border-color: var(--vintage-primary);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+</style>
+
 @if (_isLoading)
 {
     <div class="loading-overlay">
@@ -10,56 +203,92 @@
     </div>
 }
 
-<h1>RentalsTienDtList</h1>
+<div class="rentals-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>🚗 Rental Management</h1>
+        <button class="btn-create" @onclick='() => NavigationManager.NavigateTo("/RentalsTienDts/RentalsTienDtForm")'>
+            ➕ Create New Rental
+        </button>
+    </div>
+</div>
 
 @if (RentalsTienDts == null)
 {
-    <p><em>Loading...</em></p>
+    <p class="empty-state"><em>Loading...</em></p>
+}
+else if (RentalsTienDts.Count == 0)
+{
+    <div class="empty-state">
+        <h3>No rentals found</h3>
+        <p>Start by creating a new rental</p>
+    </div>
 }
 else
 {
-    <a href="/RentalsTienDts/RentalsTienDtForm" class="btn btn-primary mb-3">Create New Rental</a>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>User Account</th>
-                <th>Vehicle</th>
-                <th>Total Amount</th>
-                <th>Security Deposit</th>
-                <th>Note</th>
-                <th>Created Date</th>
-                <th>Active</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in PaginatedRentals)
-            {
-                <tr>
-                    <td>@item.RentalTienDtid</td>
-                    <td>@item.UserAccountId</td>
-                    <td>@item.VehicleId</td>
-                    <td>@(item.TotalAmount.HasValue ? item.TotalAmount.Value.ToString("C") : string.Empty)</td>
-                    <td>@item.SecurityDeposit.ToString("C")</td>
-                    <td>@(string.IsNullOrEmpty(item.Note) ? "" : item.Note)</td>
-                    <td>@(item.CreatedDate.HasValue ? item.CreatedDate.Value.ToString("g") : string.Empty)</td>
-                    <td>@(item.IsActive.HasValue ? (item.IsActive.Value ? "Yes" : "No") : "")</td>
-                    <td>@GetStatusName(item.RentalStatusTienDtid)</td>
-                    <td>
-                        <button class="btn btn-info btn-sm" @onclick="() => NavigateToDetail(item.RentalTienDtid)">Detail</button>
-                        <button class="btn btn-warning btn-sm" @onclick="() => NavigateToUpdate(item.RentalTienDtid)">Update</button>
-                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteRental(item.RentalTienDtid)">Delete</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="rentals-list">
+        @foreach (var item in PaginatedRentals)
+        {
+            <div class="rental-card">
+                <div class="rental-card-header">
+                    <span class="rental-id">Rental #@item.RentalTienDtid</span>
+                    <span class="status-badge @(item.IsActive.HasValue && item.IsActive.Value ? "active-badge" : "inactive-badge")">
+                        @(item.IsActive.HasValue && item.IsActive.Value ? "🟢 Active" : "🔴 Inactive")
+                    </span>
+                </div>
+
+                <div class="rental-details">
+                    <div class="detail-item">
+                        <span class="detail-label">👤 User Account</span>
+                        <span class="detail-value">@item.UserAccountId</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">🚙 Vehicle</span>
+                        <span class="detail-value">@item.VehicleId</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">💰 Total Amount</span>
+                        <span class="detail-value">@(item.TotalAmount.HasValue ? item.TotalAmount.Value.ToString("C") : "N/A")</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">🔒 Security Deposit</span>
+                        <span class="detail-value">@item.SecurityDeposit.ToString("C")</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">📅 Created Date</span>
+                        <span class="detail-value">@(item.CreatedDate.HasValue ? item.CreatedDate.Value.ToString("MMM dd, yyyy") : "N/A")</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">📊 Status</span>
+                        <span class="detail-value">@GetStatusName(item.RentalStatusTienDtid)</span>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(item.Note))
+                {
+                    <div class="detail-item mb-3">
+                        <span class="detail-label">📝 Note</span>
+                        <span class="detail-value">@item.Note</span>
+                    </div>
+                }
+
+                <div class="action-buttons">
+                    <button class="btn-modern btn-view" @onclick="() => NavigateToDetail(item.RentalTienDtid)">
+                        👁️ View Details
+                    </button>
+                    <button class="btn-modern btn-edit" @onclick="() => NavigateToUpdate(item.RentalTienDtid)">
+                        ✏️ Edit
+                    </button>
+                    <button class="btn-modern btn-delete" @onclick="() => DeleteRental(item.RentalTienDtid)">
+                        🗑️ Delete
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
     
     @if (totalPages > 1)
     {
-        <div class="pagination-container mt-3">
+        <div class="pagination-modern">
             <nav aria-label="Page navigation">
                 <ul class="pagination justify-content-center">
                     <li class="page-item @(currentPage == 1 ? "disabled" : "")">
