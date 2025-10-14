@@ -3,46 +3,69 @@
   --muted: rgba(255, 255, 255, 0.8);
   --accent: #ffd700;
   --accent-600: #ffed4e;
-  --surface: rgba(255, 255, 255, 0.1);
+  --accent-hover: #ffc400;
+  --surface: rgba(255, 255, 255, 0.15);
+  --surface-hover: rgba(255, 255, 255, 0.25);
   --danger: #ff4757;
   --text: white;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .rental-form-container{
   display:flex;
-  gap:24px;
+  gap:32px;
   align-items:flex-start;
-  padding:18px;
+  padding:32px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
 }
 
 .card{
   background: var(--card-bg);
-  border-radius:16px;
-  box-shadow:0 10px 30px rgba(0, 0, 0, 0.2);
-  width:680px;
+  border-radius:20px;
+  box-shadow: var(--shadow-lg);
+  width:750px;
   overflow:hidden;
   color: var(--text);
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .card-header{
-  padding:24px 20px;
+  padding:32px 28px;
   text-align: center;
   background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .card-header h3{
   margin:0;
-  font-size: 2rem;
-  font-weight: 600;
+  font-size: 2.25rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .subtitle{
-  margin:8px 0 0;
+  margin:12px 0 0;
   color: var(--muted);
-  font-size:1rem;
+  font-size:1.05rem;
+  font-weight: 400;
 }
 
 .alert {
@@ -64,104 +87,154 @@
   color: var(--muted);
 }
 
-.card-body{padding:24px 20px}
+.card-body{
+  padding:32px 28px;
+  background: rgba(255, 255, 255, 0.05);
+}
 
 .grid{
   display:grid;
   grid-template-columns:repeat(2, 1fr);
-  gap:18px;
+  gap:24px;
+  animation: fadeIn 0.6s ease-out 0.2s both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .form-group{display:flex;flex-direction:column}
 .form-group.full-width{grid-column:1/-1}
 
-label{font-weight:600;margin-bottom:8px;font-size:0.9rem;text-transform: uppercase;letter-spacing: 0.5px;}
+label{
+  font-weight:600;
+  margin-bottom:10px;
+  font-size:0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .input, .textarea{
-  padding:12px 14px;
-  border-radius:10px;
+  padding:14px 16px;
+  border-radius:12px;
   border:2px solid rgba(255, 255, 255, 0.2);
   background: var(--surface);
   outline:none;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: var(--text);
   font-size: 1rem;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
 }
 .input:focus, .textarea:focus{
-  box-shadow:0 0 0 3px rgba(255, 215, 0, 0.3);
+  box-shadow:0 0 0 4px rgba(255, 215, 0, 0.4), 0 4px 12px rgba(255, 215, 0, 0.2);
   border-color: var(--accent);
+  background: var(--surface-hover);
+  transform: translateY(-2px);
 }
 .input::placeholder, .textarea::placeholder {
   color: rgba(255, 255, 255, 0.7);
 }
-.textarea{min-height:120px;resize:vertical}
+.textarea{
+  min-height:140px;
+  resize:vertical;
+  font-family: inherit;
+  line-height: 1.6;
+}
 
 .card-footer{
-  padding:20px;
-  display:flex;gap:12px;justify-content:flex-end;
+  padding:24px 28px;
+  display:flex;
+  gap:16px;
+  justify-content:flex-end;
   background: rgba(255, 255, 255, 0.05);
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .btn{
-  padding:12px 18px;
-  border-radius:10px;
+  padding:14px 28px;
+  border-radius:12px;
   border:0;
   cursor:pointer;
-  font-weight:600;
+  font-weight:700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
+  letter-spacing: 1px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-sm);
 }
 .btn.primary{
   background: var(--accent);
-  color: #333;
+  color: #1a1a1a;
 }
-.btn.primary:hover {
-  background: var(--accent-600);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+.btn.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(255, 215, 0, 0.5);
+}
+.btn.primary:active:not(:disabled) {
+  transform: translateY(-1px);
 }
 .btn.primary:disabled {
-  background: #ccc;
+  background: #999;
+  color: #666;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+  opacity: 0.6;
 }
 .btn.ghost{
   background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.4);
   color: var(--text);
 }
 .btn.ghost:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
+}
+.btn.ghost:active {
+  transform: translateY(-1px);
 }
 
 .preview{
-  width:340px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
+  width:420px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: var(--shadow-md);
+  padding: 2rem;
+  animation: slideUp 0.5s ease-out 0.2s both;
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 .preview h4{
-  margin:0 0 1rem;
-  color: #333;
-  font-size: 1.3rem;
+  margin:0 0 1.5rem;
+  color: #667eea;
+  font-size: 1.5rem;
+  font-weight: 700;
+  padding-bottom: 1rem;
+  border-bottom: 3px solid #667eea;
 }
 .preview-card{
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding:16px;
-  border-radius:12px;
-  border:1px solid rgba(16,24,40,0.04);
-  box-shadow:0 6px 18px rgba(16,24,40,0.1);
+  padding:20px;
+  border-radius:16px;
+  border:1px solid rgba(102, 126, 234, 0.2);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
 }
 .preview-card div{
-  padding:8px 0;
-  color: #555;
-  font-size: 0.95rem;
+  padding:10px 0;
+  color: #444;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 .preview-card strong {
   color: #667eea;
+  font-weight: 700;
+  margin-right: 8px;
 }
 
 @media (max-width:980px){

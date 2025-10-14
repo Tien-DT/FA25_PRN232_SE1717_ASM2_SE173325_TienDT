@@ -183,6 +183,48 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
             return response?.Data?.rentalStatusesTienDts ?? new List<RentalStatusesTienDt>();
         }
 
+        public async Task<SearchRentalsResponse> SearchRentalsAsync(string? note, decimal? securityDeposit, string? statusName, int currentPage = 1, int pageSize = 10)
+        {
+            var query = @"query SearchWithPaging($searchRequest: RentalsTienDtSearchRequestInput!) {
+                searchWithPaging(searchRequest: $searchRequest) {
+                    totalItems
+                    totalPages
+                    currentPage
+                    pageSize
+                    items {
+                        rentalTienDtid
+                        userAccountId
+                        vehicleId
+                        stationId
+                        startTime
+                        endTime
+                        plannedEndTime
+                        totalAmount
+                        securityDeposit
+                        note
+                        rentalStatusTienDtid
+                        isCompleted
+                        isActive
+                        createdDate
+                        updatedDate
+                    }
+                }
+            }";
+
+            var searchRequest = new
+            {
+                note = note,
+                securityDeposit = securityDeposit,
+                statusName = statusName,
+                currentPage = currentPage,
+                pageSize = pageSize
+            };
+
+            var request = new GraphQLRequest { Query = query, Variables = new { searchRequest } };
+            var response = await _graphQLClient.SendQueryAsync<SearchRentalsGraphQLResponse>(request);
+            return response?.Data?.searchWithPaging ?? new SearchRentalsResponse();
+        }
+
     }
 
     public class RentalByIdResponse
@@ -207,6 +249,20 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
     public class RentalStatusesTienDtGraphQLResponse
     {
         public List<RentalStatusesTienDt> rentalStatusesTienDts { get; set; }
+    }
+
+    public class SearchRentalsGraphQLResponse
+    {
+        public SearchRentalsResponse searchWithPaging { get; set; }
+    }
+
+    public class SearchRentalsResponse
+    {
+        public int TotalItems { get; set; }
+        public int TotalPages { get; set; }
+        public int CurrentPage { get; set; }
+        public int PageSize { get; set; }
+        public List<RentalsTienDt> Items { get; set; } = new List<RentalsTienDt>();
     }
 
 }

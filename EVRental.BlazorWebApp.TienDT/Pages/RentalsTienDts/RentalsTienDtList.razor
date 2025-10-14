@@ -194,6 +194,103 @@
         padding: 3rem;
         color: #6c757d;
     }
+
+    .search-section {
+        margin-bottom: 2rem;
+    }
+
+    .search-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-left: 4px solid var(--vintage-primary);
+    }
+
+    .search-title {
+        margin: 0 0 1.5rem;
+        color: var(--vintage-text);
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .search-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        align-items: end;
+    }
+
+    .search-field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .search-field label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #495057;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .search-field .form-control {
+        padding: 0.75rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+
+    .search-field .form-control:focus {
+        outline: none;
+        border-color: var(--vintage-primary);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .search-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .btn-search, .btn-clear {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-search {
+        background: var(--vintage-primary);
+        color: white;
+        flex: 1;
+    }
+
+    .btn-search:hover {
+        background: var(--vintage-secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-clear {
+        background: #6c757d;
+        color: white;
+        flex: 1;
+    }
+
+    .btn-clear:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
 </style>
 
 @if (_isLoading)
@@ -209,6 +306,34 @@
         <button class="btn-create" @onclick='() => NavigationManager.NavigateTo("/RentalsTienDts/RentalsTienDtForm")'>
             ➕ Create New Rental
         </button>
+    </div>
+</div>
+
+<div class="search-section">
+    <div class="search-card">
+        <h3 class="search-title">🔍 Search Rentals</h3>
+        <div class="search-form">
+            <div class="search-field">
+                <label>Note</label>
+                <input type="text" class="form-control" @bind="searchNote" placeholder="Search by note..." />
+            </div>
+            <div class="search-field">
+                <label>Security Deposit</label>
+                <input type="number" class="form-control" @bind="searchSecurityDeposit" placeholder="Enter amount..." />
+            </div>
+            <div class="search-field">
+                <label>Status Name</label>
+                <input type="text" class="form-control" @bind="searchStatusName" placeholder="Search by status..." />
+            </div>
+            <div class="search-actions">
+                <button class="btn-search" @onclick="SearchRentals">
+                    🔎 Search
+                </button>
+                <button class="btn-clear" @onclick="ClearSearch">
+                    🔄 Clear
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -380,6 +505,12 @@ else
     private int pageSize = 10;
     private int totalPages = 0;
     
+    // Search variables
+    private string? searchNote;
+    private decimal? searchSecurityDeposit;
+    private string? searchStatusName;
+    private bool isSearching = false;
+    
     private List<RentalsTienDt> PaginatedRentals
     {
         get
@@ -499,6 +630,73 @@ else
                 totalPages = (int)Math.Ceiling((double)RentalsTienDts.Count / pageSize);
             }
             
+            StateHasChanged();
+        }
+    }
+
+    private async Task SearchRentals()
+    {
+        _isLoading = true;
+        isSearching = true;
+        currentPage = 1; // Reset to first page on new search
+        
+        try
+        {
+            var searchResponse = await _graphQLConsumers.SearchRentalsAsync(
+                searchNote,
+                searchSecurityDeposit,
+                searchStatusName,
+                currentPage,
+                pageSize
+            );
+            
+            RentalsTienDts = searchResponse.Items;
+            totalPages = searchResponse.TotalPages;
+            currentPage = searchResponse.CurrentPage;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error searching rentals: {e.Message}");
+            RentalsTienDts = new List<RentalsTienDt>();
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ClearSearch()
+    {
+        searchNote = null;
+        searchSecurityDeposit = null;
+        searchStatusName = null;
+        isSearching = false;
+        currentPage = 1;
+        
+        await LoadAllRentals();
+    }
+
+    private async Task LoadAllRentals()
+    {
+        _isLoading = true;
+        try
+        {
+            RentalsTienDts = await _graphQLConsumers.GetRentalsAsync();
+            
+            // Recalculate total pages
+            if (RentalsTienDts != null && RentalsTienDts.Count > 0)
+            {
+                totalPages = (int)Math.Ceiling((double)RentalsTienDts.Count / pageSize);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error loading rentals: {e.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
             StateHasChanged();
         }
     }
