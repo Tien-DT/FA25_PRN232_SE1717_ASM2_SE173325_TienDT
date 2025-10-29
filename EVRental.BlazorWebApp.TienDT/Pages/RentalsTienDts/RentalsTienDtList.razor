@@ -144,6 +144,55 @@
         transform: scale(1.05);
     }
 
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+        padding: 1rem;
+    }
+
+    .modal-content {
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+        max-width: 420px;
+        width: 100%;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .modal-content h3 {
+        margin-bottom: 1rem;
+        font-size: 1.35rem;
+        color: var(--vintage-text);
+    }
+
+    .modal-content p {
+        margin: 0;
+        color: #555555;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1.75rem;
+    }
+
+    .btn-cancel {
+        background-color: #e0e0e0;
+        color: #333333;
+    }
+
+    .btn-cancel:hover {
+        background-color: #d5d5d5;
+        transform: scale(1.05);
+    }
+
     .btn-create {
         background-color: var(--vintage-primary);
         color: white;
@@ -403,7 +452,7 @@ else
                     <button class="btn-modern btn-edit" @onclick="() => NavigateToUpdate(item.RentalTienDtid)">
                         ✏️ Edit
                     </button>
-                    <button class="btn-modern btn-delete" @onclick="() => DeleteRental(item.RentalTienDtid)">
+                    <button class="btn-modern btn-delete" @onclick="() => PromptDeleteRental(item.RentalTienDtid)">
                         🗑️ Delete
                     </button>
                 </div>
@@ -494,11 +543,31 @@ else
     }
 }
 
+@if (_showDeleteConfirmation)
+{
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete rental ID <strong>@_pendingDeleteRentalId</strong>?</p>
+            <div class="modal-actions">
+                <button class="btn-modern btn-cancel" @onclick="CancelDeletePrompt">
+                    Cancel
+                </button>
+                <button class="btn-modern btn-delete" @onclick="ConfirmDeleteAsync">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<RentalsTienDt>? RentalsTienDts;
     private List<RentalStatusesTienDt>? rentalStatuses;
     private Dictionary<int, string> statusMap = new Dictionary<int, string>();
     private bool _isLoading = false;
+    private bool _showDeleteConfirmation;
+    private int? _pendingDeleteRentalId;
     
     // Pagination variables
     private int currentPage = 1;
@@ -567,6 +636,35 @@ else
     private void NavigateToUpdate(int rentalId)
     {
         NavigationManager.NavigateTo($"/RentalsTienDts/RentalsTienDtForm/{rentalId}");
+    }
+
+    private void PromptDeleteRental(int rentalId)
+    {
+        _pendingDeleteRentalId = rentalId;
+        _showDeleteConfirmation = true;
+    }
+
+    private void CancelDeletePrompt()
+    {
+        _showDeleteConfirmation = false;
+        _pendingDeleteRentalId = null;
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        if (_pendingDeleteRentalId.HasValue)
+        {
+            var rentalId = _pendingDeleteRentalId.Value;
+            try
+            {
+                await DeleteRental(rentalId);
+            }
+            finally
+            {
+                _showDeleteConfirmation = false;
+                _pendingDeleteRentalId = null;
+            }
+        }
     }
 
     private async Task DeleteRental(int rentalId)
