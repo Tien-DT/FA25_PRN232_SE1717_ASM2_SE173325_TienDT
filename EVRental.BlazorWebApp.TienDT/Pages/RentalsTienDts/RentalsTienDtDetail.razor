@@ -1,5 +1,7 @@
 ﻿@page "/RentalsTienDts/RentalsTienDtDetail/{RentalsTienDtId:int}"
 @using EVRental.BlazorWebApp.TienDT.Models
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @inject EVRental.BlazorWebApp.TienDT.GraphQLClients.GraphQLConsumers _graphQLConsumers
 @inject NavigationManager NavigationManager
 
@@ -144,6 +146,7 @@
         border-top: 2px solid var(--vintage-border);
         display: flex;
         gap: 1rem;
+        flex-wrap: wrap;
     }
 
     .btn-back {
@@ -165,6 +168,98 @@
         background-color: var(--vintage-text);
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         transform: translateY(-2px);
+    }
+
+    .btn-edit {
+        background-color: var(--vintage-warning);
+        color: white;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-edit:hover {
+        background-color: #d5a466;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transform: translateY(-2px);
+    }
+
+    .delete-section {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: #fff3cd;
+        border-radius: 8px;
+        border-left: 4px solid #ffc107;
+    }
+
+    .delete-section h3 {
+        color: #856404;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .delete-section p {
+        color: #856404;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    .delete-confirmation {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border: 2px solid #ffc107;
+    }
+
+    .delete-confirmation label {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        font-weight: 600;
+        color: #856404;
+    }
+
+    .delete-confirmation input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .btn-delete {
+        background-color: var(--vintage-danger);
+        color: white;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-delete:hover:not(:disabled) {
+        background-color: #b56e6f;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transform: translateY(-2px);
+    }
+
+    .btn-delete:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+        opacity: 0.6;
     }
 
     .loading-state {
@@ -276,11 +371,46 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="delete-section">
+                    <h3>⚠️ Danger Zone</h3>
+                    <p>
+                        Once you delete this rental, there is no going back. Please be certain before proceeding.
+                    </p>
+                    
+                    <div class="delete-confirmation">
+                        <label>
+                            <input type="checkbox" @bind="confirmDelete" />
+                            I understand that this action cannot be undone
+                        </label>
+                    </div>
+
+                    <button class="btn-delete" @onclick="HandleDelete" disabled="@(!confirmDelete || isDeleting)">
+                        @if (isDeleting)
+                        {
+                            <span>⏳ Deleting...</span>
+                        }
+                        else
+                        {
+                            <span>🗑️ Delete This Rental</span>
+                        }
+                    </button>
+
+                    @if (!string.IsNullOrEmpty(deleteError))
+                    {
+                        <div style="margin-top: 1rem; padding: 1rem; background: #f8d7da; color: #721c24; border-radius: 8px; border-left: 4px solid #dc3545;">
+                            <strong>Error:</strong> @deleteError
+                        </div>
+                    }
+                </div>
             </div>
 
             <div class="action-footer">
                 <button class="btn-back" @onclick="BackToList">
                     ← Back to List
+                </button>
+                <button class="btn-edit" @onclick="EditRental">
+                    ✏️ Edit Rental
                 </button>
             </div>
         </div>
@@ -292,6 +422,9 @@
     public int RentalsTienDtId { get; set; }
 
     private RentalsTienDt? rental;
+    private bool confirmDelete = false;
+    private bool isDeleting = false;
+    private string? deleteError;
 
     protected override async Task OnInitializedAsync()
     {
@@ -301,5 +434,44 @@
     private void BackToList()
     {
         NavigationManager.NavigateTo("/RentalsTienDts/RentalsTienDtsList");
+    }
+
+    private void EditRental()
+    {
+        NavigationManager.NavigateTo($"/RentalsTienDts/RentalsTienDtForm/{RentalsTienDtId}");
+    }
+
+    private async Task HandleDelete()
+    {
+        if (!confirmDelete)
+        {
+            return;
+        }
+
+        isDeleting = true;
+        deleteError = null;
+
+        try
+        {
+            var success = await _graphQLConsumers.DeleteRentalAsync(RentalsTienDtId);
+            
+            if (success)
+            {
+                // Redirect to list after successful deletion
+                NavigationManager.NavigateTo("/RentalsTienDts/RentalsTienDtsList");
+            }
+            else
+            {
+                deleteError = "Failed to delete the rental. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            deleteError = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isDeleting = false;
+        }
     }
 }

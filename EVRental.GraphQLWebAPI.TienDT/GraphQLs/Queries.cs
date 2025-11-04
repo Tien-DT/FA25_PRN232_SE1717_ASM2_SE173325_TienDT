@@ -30,7 +30,12 @@ namespace EVRental.GraphQLWebAPI.TienDT.GraphQLs
         {
             return await _serviceProviders.RentalStatusesTienDtService.GetAllAsync();
         }
-        
+
+        [GraphQLName("login")]
+        public async Task<SystemUserAccount> Login(string username, string password)
+        {
+            return await _serviceProviders.SystemUserAccountService.GetUserAccount(username, password);
+        }
 
     }
 

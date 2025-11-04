@@ -117,6 +117,33 @@ label{
   align-items: center;
   gap: 6px;
 }
+
+.required {
+  color: #ff4757;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.validation-message {
+  color: #ff4757;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  animation: shake 0.3s;
+  background: rgba(255, 71, 87, 0.1);
+  padding: 0.5rem;
+  border-radius: 6px;
+  border-left: 3px solid #ff4757;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
 .input, .textarea{
   padding:14px 16px;
   border-radius:12px;
@@ -138,6 +165,12 @@ label{
 .input::placeholder, .textarea::placeholder {
   color: rgba(255, 255, 255, 0.7);
 }
+
+.input.invalid, .textarea.invalid {
+  border-color: #ff4757;
+  background: rgba(255, 71, 87, 0.1);
+}
+
 .textarea{
   min-height:140px;
   resize:vertical;
@@ -191,14 +224,18 @@ label{
   border: 2px solid rgba(255, 255, 255, 0.4);
   color: var(--text);
 }
-.btn.ghost:hover {
+.btn.ghost:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.15);
   border-color: white;
   transform: translateY(-3px);
   box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
 }
-.btn.ghost:active {
+.btn.ghost:active:not(:disabled) {
   transform: translateY(-1px);
+}
+.btn.ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .preview{

@@ -225,6 +225,31 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
             return response?.Data?.searchWithPaging ?? new SearchRentalsResponse();
         }
 
+        public async Task<SystemUserAccount?> LoginAsync(string username, string password)
+        {
+            var query = @"query Login($username: String!, $password: String!) {
+                login(username: $username, password: $password) {
+                    userAccountId
+                    userName
+                    password
+                    fullName
+                    email
+                    phone
+                    roleId
+                    isActive
+                }
+            }";
+
+            var request = new GraphQLRequest 
+            { 
+                Query = query, 
+                Variables = new { username, password } 
+            };
+            
+            var response = await _graphQLClient.SendQueryAsync<LoginGraphQLResponse>(request);
+            return response?.Data?.login;
+        }
+
     }
 
     public class RentalByIdResponse
@@ -263,6 +288,11 @@ namespace EVRental.BlazorWebApp.TienDT.GraphQLClients
         public int CurrentPage { get; set; }
         public int PageSize { get; set; }
         public List<RentalsTienDt> Items { get; set; } = new List<RentalsTienDt>();
+    }
+
+    public class LoginGraphQLResponse
+    {
+        public SystemUserAccount? login { get; set; }
     }
 
 }

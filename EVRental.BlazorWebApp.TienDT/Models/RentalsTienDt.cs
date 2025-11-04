@@ -10,22 +10,33 @@ public partial class RentalsTienDt
     [Key]
     public int RentalTienDtid { get; set; }
 
+    [Required(ErrorMessage = "User Account ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Please select a valid User Account")]
     public int UserAccountId { get; set; }
 
+    [Required(ErrorMessage = "Vehicle ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Please select a valid Vehicle")]
     public int VehicleId { get; set; }
 
+    [Required(ErrorMessage = "Station ID is required")]
+    [Range(1, int.MaxValue, ErrorMessage = "Please select a valid Station")]
     public int StationId { get; set; }
 
+    [Required(ErrorMessage = "Start Time is required")]
     public DateTime StartTime { get; set; }
 
     public DateTime? EndTime { get; set; }
 
     public DateTime? PlannedEndTime { get; set; }
 
+    [Range(0, double.MaxValue, ErrorMessage = "Total Amount must be a positive value")]
     public decimal? TotalAmount { get; set; }
 
+    [Required(ErrorMessage = "Security Deposit is required")]
+    [Range(0, double.MaxValue, ErrorMessage = "Security Deposit must be a positive value")]
     public decimal SecurityDeposit { get; set; }
 
+    [MaxLength(500, ErrorMessage = "Note cannot exceed 500 characters")]
     public string Note { get; set; }
 
     public int? RentalStatusTienDtid { get; set; }

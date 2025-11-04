@@ -2,6 +2,8 @@
 @using EVRental.BlazorWebApp.TienDT.Models
 @using EVRental.BlazorWebApp.TienDT.GraphQLClients
 @using System.Globalization
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @inject GraphQLConsumers GraphQLClient
 @inject NavigationManager Navigation
 
@@ -27,23 +29,32 @@
 		{
 			<EditForm Model="rental" OnValidSubmit="HandleValidSubmit">
 				<DataAnnotationsValidator />
-				<ValidationSummary />
+				
+				@if (!string.IsNullOrEmpty(validationError))
+				{
+					<div class="alert error">
+						@validationError
+					</div>
+				}
 
 				<div class="card-body">
 					<div class="grid">
 						<div class="form-group">
-							<label for="userAccount">Người thuê (UserAccountId)</label>
+							<label for="userAccount">Người thuê (UserAccountId) <span class="required">*</span></label>
 							<InputNumber id="userAccount" class="input" @bind-Value="rental.UserAccountId" />
+							<ValidationMessage For="@(() => rental.UserAccountId)" class="validation-message" />
 						</div>
 
 						<div class="form-group">
-							<label for="vehicle">Xe (VehicleId)</label>
+							<label for="vehicle">Xe (VehicleId) <span class="required">*</span></label>
 							<InputNumber id="vehicle" class="input" @bind-Value="rental.VehicleId" />
+							<ValidationMessage For="@(() => rental.VehicleId)" class="validation-message" />
 						</div>
 
 						<div class="form-group">
-							<label for="station">Trạm (StationId)</label>
+							<label for="station">Trạm (StationId) <span class="required">*</span></label>
 							<InputNumber id="station" class="input" @bind-Value="rental.StationId" />
+							<ValidationMessage For="@(() => rental.StationId)" class="validation-message" />
 						</div>
 
 						<div class="form-group">
@@ -61,8 +72,9 @@
 						</div>
 
 						<div class="form-group">
-							<label for="start">Thời gian bắt đầu</label>
+							<label for="start">Thời gian bắt đầu <span class="required">*</span></label>
 							<InputDate id="start" class="input" @bind-Value="rental.StartTime" />
+							<ValidationMessage For="@(() => rental.StartTime)" class="validation-message" />
 						</div>
 
 						<div class="form-group">
@@ -78,11 +90,13 @@
 						<div class="form-group">
 							<label for="totalAmount">Tổng tiền</label>
 							<InputNumber id="totalAmount" class="input" @bind-Value="rental.TotalAmount" />
+							<ValidationMessage For="@(() => rental.TotalAmount)" class="validation-message" />
 						</div>
 
 						<div class="form-group">
-							<label for="securityDeposit">Tiền đặt cọc</label>
+							<label for="securityDeposit">Tiền đặt cọc <span class="required">*</span></label>
 							<InputNumber id="securityDeposit" class="input" @bind-Value="rental.SecurityDeposit" />
+							<ValidationMessage For="@(() => rental.SecurityDeposit)" class="validation-message" />
 						</div>
 
 							<div class="form-group">
@@ -97,6 +111,7 @@
 						<div class="form-group full-width">
 							<label for="note">Ghi chú</label>
 							<InputTextArea id="note" class="textarea" @bind-Value="rental.Note" />
+							<ValidationMessage For="@(() => rental.Note)" class="validation-message" />
 						</div>
 					</div>
 				</div>
@@ -113,7 +128,7 @@
 							<span>Lưu</span>
 						}
 					</button>
-					<button type="button" class="btn ghost" @onclick="ResetForm">Xóa</button>
+					<button type="button" class="btn ghost" @onclick="ResetForm" disabled="@isSubmitting">Xóa</button>
 				</div>
 			</EditForm>
 		}
@@ -138,39 +153,67 @@
 		SecurityDeposit = 0m,
 		IsActive = true,
 		Note = "",  // Initialize Note to prevent null
-		UserAccountId = 1,  // Set default user (you may want to get from session)
-		VehicleId = 1,  // Set default vehicle
-		StationId = 1   // Set default station
+		UserAccountId = 0,  // Set to 0 to trigger validation
+		VehicleId = 0,  // Set to 0 to trigger validation
+		StationId = 0   // Set to 0 to trigger validation
 	};
 	private string? errorMessage;
+	private string? validationError;
 	private bool isLoading;
-		private bool isSubmitting;
-		private List<RentalStatusesTienDt>? rentalStatuses;
+	private bool isSubmitting;
+	private List<RentalStatusesTienDt>? rentalStatuses;
 	
-		protected override async Task OnInitializedAsync()
+	protected override async Task OnInitializedAsync()
+	{
+		isLoading = true;
+		try
 		{
-			isLoading = true;
-			try
+			rentalStatuses = await GraphQLClient.GetRentalStatusesTienDtsAsync();
+			if (Id.HasValue)
 			{
-				rentalStatuses = await GraphQLClient.GetRentalStatusesTienDtsAsync();
-				if (Id.HasValue)
-				{
-					rental = await GraphQLClient.GetRentalByIdAsync(Id.Value) ?? new RentalsTienDt();
-				}
-			}
-			catch (Exception ex)
-			{
-				errorMessage = "Không thể tải dữ liệu: " + ex.Message;
-			}
-			finally
-			{
-				isLoading = false;
+				rental = await GraphQLClient.GetRentalByIdAsync(Id.Value) ?? new RentalsTienDt();
 			}
 		}
+		catch (Exception ex)
+		{
+			errorMessage = "Không thể tải dữ liệu: " + ex.Message;
+		}
+		finally
+		{
+			isLoading = false;
+		}
+	}
 
 	private async Task HandleValidSubmit()
 	{
+		// Additional validation
+		if (rental.UserAccountId <= 0)
+		{
+			validationError = "Vui lòng nhập User Account ID hợp lệ (> 0)";
+			return;
+		}
+		
+		if (rental.VehicleId <= 0)
+		{
+			validationError = "Vui lòng nhập Vehicle ID hợp lệ (> 0)";
+			return;
+		}
+		
+		if (rental.StationId <= 0)
+		{
+			validationError = "Vui lòng nhập Station ID hợp lệ (> 0)";
+			return;
+		}
+		
+		if (rental.SecurityDeposit < 0)
+		{
+			validationError = "Tiền đặt cọc phải >= 0";
+			return;
+		}
+
 		isSubmitting = true;
+		validationError = null;
+		
 		try
 		{
 			errorMessage = null;
@@ -212,12 +255,13 @@
 		{
 			StartTime = DateTime.Now,
 			SecurityDeposit = 0m,
-			IsActive = true
+			IsActive = true,
+			Note = "",
+			UserAccountId = 0,
+			VehicleId = 0,
+			StationId = 0
 		};
 		errorMessage = null;
+		validationError = null;
 	}
-
-	
-
-	
 }
