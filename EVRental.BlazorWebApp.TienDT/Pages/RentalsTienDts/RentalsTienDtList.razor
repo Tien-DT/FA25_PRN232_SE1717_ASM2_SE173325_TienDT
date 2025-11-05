@@ -623,7 +623,7 @@ else
     private void NavigateToDetailForDelete(int rentalId)
     {
         // Navigate to detail page for delete confirmation
-        NavigationManager.NavigateTo($"/RentalsTienDts/RentalsTienDtDetail/{rentalId}");
+        NavigationManager.NavigateTo($"/RentalsTienDts/RentalsTienDtDetail/{rentalId}?delete=true");
     }
 
     private void GoToPage(int pageNumber)

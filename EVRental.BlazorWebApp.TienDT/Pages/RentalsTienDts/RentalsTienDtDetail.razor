@@ -1,6 +1,7 @@
 ﻿@page "/RentalsTienDts/RentalsTienDtDetail/{RentalsTienDtId:int}"
 @using EVRental.BlazorWebApp.TienDT.Models
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components
 @attribute [Authorize]
 @inject EVRental.BlazorWebApp.TienDT.GraphQLClients.GraphQLConsumers _graphQLConsumers
 @inject NavigationManager NavigationManager
@@ -372,37 +373,40 @@
                     </div>
                 </div>
 
-                <div class="delete-section">
-                    <h3>⚠️ Danger Zone</h3>
-                    <p>
-                        Once you delete this rental, there is no going back. Please be certain before proceeding.
-                    </p>
-                    
-                    <div class="delete-confirmation">
-                        <label>
-                            <input type="checkbox" @bind="confirmDelete" />
-                            I understand that this action cannot be undone
-                        </label>
-                    </div>
-
-                    <button class="btn-delete" @onclick="HandleDelete" disabled="@(!confirmDelete || isDeleting)">
-                        @if (isDeleting)
-                        {
-                            <span>⏳ Deleting...</span>
-                        }
-                        else
-                        {
-                            <span>🗑️ Delete This Rental</span>
-                        }
-                    </button>
-
-                    @if (!string.IsNullOrEmpty(deleteError))
-                    {
-                        <div style="margin-top: 1rem; padding: 1rem; background: #f8d7da; color: #721c24; border-radius: 8px; border-left: 4px solid #dc3545;">
-                            <strong>Error:</strong> @deleteError
+                @if (IsDeleteMode)
+                {
+                    <div class="delete-section">
+                        <h3>⚠️ Danger Zone</h3>
+                        <p>
+                            Once you delete this rental, there is no going back. Please be certain before proceeding.
+                        </p>
+                        
+                        <div class="delete-confirmation">
+                            <label>
+                                <input type="checkbox" @bind="confirmDelete" />
+                                I understand that this action cannot be undone
+                            </label>
                         </div>
-                    }
-                </div>
+
+                        <button class="btn-delete" @onclick="HandleDelete" disabled="@(!confirmDelete || isDeleting)">
+                            @if (isDeleting)
+                            {
+                                <span>⏳ Deleting...</span>
+                            }
+                            else
+                            {
+                                <span>🗑️ Delete This Rental</span>
+                            }
+                        </button>
+
+                        @if (!string.IsNullOrEmpty(deleteError))
+                        {
+                            <div style="margin-top: 1rem; padding: 1rem; background: #f8d7da; color: #721c24; border-radius: 8px; border-left: 4px solid #dc3545;">
+                                <strong>Error:</strong> @deleteError
+                            </div>
+                        }
+                    </div>
+                }
             </div>
 
             <div class="action-footer">
@@ -412,6 +416,12 @@
                 <button class="btn-edit" @onclick="EditRental">
                     ✏️ Edit Rental
                 </button>
+                @if (!IsDeleteMode)
+                {
+                    <button class="btn-delete" @onclick="GoToDeleteMode">
+                        🗑️ Delete Rental
+                    </button>
+                }
             </div>
         </div>
     }
@@ -420,6 +430,9 @@
 @code {
     [Parameter]
     public int RentalsTienDtId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "delete")]
+    public bool IsDeleteMode { get; set; }
 
     private RentalsTienDt? rental;
     private bool confirmDelete = false;
@@ -439,6 +452,11 @@
     private void EditRental()
     {
         NavigationManager.NavigateTo($"/RentalsTienDts/RentalsTienDtForm/{RentalsTienDtId}");
+    }
+
+    private void GoToDeleteMode()
+    {
+        NavigationManager.NavigateTo($"/RentalsTienDts/RentalsTienDtDetail/{RentalsTienDtId}?delete=true");
     }
 
     private async Task HandleDelete()
